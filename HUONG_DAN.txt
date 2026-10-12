@@ -1,0 +1,13 @@
+V15.3 — GIAO DIỆN ĐỒNG BỘ, NÚT RÕ VÀ NỔI BẬT
+Dành cho bản V15/V15.1/V15.2 dùng Appwrite đã gửi.
+
+1. Giải nén ZIP.
+2. Vào GitHub repository qldkt > Add file > Upload files.
+3. Tải toàn bộ file giao diện và thư mục icons trong ZIP lên thư mục gốc repo, cùng vị trí config.js. HUONG_DAN.txt không cần tải.
+4. Commit changes, chờ GitHub Pages triển khai xong rồi Ctrl+F5.
+5. Giữ nguyên config.js đã điền URL Appwrite, transport.js, pwa.js, xlsx.full.min.js và các file nền còn lại.
+Không sửa Appwrite/Apps Script, không chạy setupSchool, không xóa dữ liệu.
+
+Đã chỉnh màn hình đăng nhập, menu điều hướng, nhập điểm, phiếu đã lưu, xem điểm/báo cáo, nhập số phách, danh sách phòng thi, tài khoản, thiết lập và hộp thoại theo một hệ màu xanh rõ hơn. Nút chính xanh dương, Lưu điểm xanh lá; các nút xuất Excel/in/tải phiếu có nền và viền dễ thấy. Menu đang chọn nền trắng trên thanh xanh đậm. Nút có trạng thái hover/focus và bố cục điện thoại.
+Logo trường vẫn kèm trong ZIP. Quy tắc giao diện mới chỉ áp dụng @media screen, giữ phần in hai trang của bản hiện tại.
+Đã kiểm tra cú pháp JavaScript, liên kết tài nguyên và phạm vi CSS màn hình; chưa kiểm tra hiển thị bằng trình duyệt thật.
