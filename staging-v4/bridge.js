@@ -30,13 +30,15 @@
         if (e?.message?.includes('phiên của tài khoản khác')) throw e;
         if (e?.code !== 401) throw e;
       }
-      await account.createEmailPasswordSession({email:email.trim(),password});
+      // Appwrite Web SDK 17.0.0 takes positional arguments.
+      await account.createEmailPasswordSession(email.trim(),password);
       return account.get();
     },
     async logout() {
+      // Keep the current session if logout fails; never claim a server logout on a network error.
+      try {await account.deleteSession('current');}
+      catch(e){if(e?.code!==401 && !(e?.code===404 && e?.type==='user_session_not_found'))throw e;}
       clearJwt();
-      try {await account.deleteSession({sessionId:'current'});}
-      catch(e){if(e?.code!==401)throw e;}
     }
   });
   const readActions = new Set(['bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping']);

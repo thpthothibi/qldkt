@@ -6,7 +6,7 @@
  const api=(a,p={})=>window.HTBRemote(a,p);
  function controls(){
   $('loginButton').disabled=busy;
-  for(const id of ['logout','refresh'])$(id).disabled=busy;
+  for(const id of ['logout','logoutOld','refresh'])$(id).disabled=busy;
   $('email').disabled=busy;$('password').disabled=busy;
   $('adminRun').disabled=busy||user?.role!=='admin'||status?.mode!=='pilot50'||user?.mustChange===true;
   $('teacherRun').disabled=busy||user?.role!=='teacher';
@@ -29,7 +29,8 @@
   finally{busy=false;controls();}
  }
  $('loginForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;controls();$('loginError').textContent='';try{await window.HTBAuth.login($('email').value.trim(),$('password').value);$('password').value='';await refresh();}catch(e){$('loginError').textContent=e.message;}finally{busy=false;controls();}});
- $('logout').addEventListener('click',async()=>{if(busy)return;busy=true;controls();$('sessionError').textContent='';try{await window.HTBAuth.logout();user=null;status=null;$('sessionCard').classList.add('hidden');$('loginCard').classList.remove('hidden');$('password').value='';}catch(e){$('sessionError').textContent=e.message;}finally{busy=false;controls();}});
+ async function logoutCurrent(){if(busy)return;busy=true;controls();$('sessionError').textContent='';$('loginError').textContent='';try{await window.HTBAuth.logout();user=null;status=null;$('sessionCard').classList.add('hidden');$('loginCard').classList.remove('hidden');$('password').value='';$('runState').textContent='Đã kết thúc phiên. Đăng nhập bằng email tài khoản khác.';}catch(e){$('sessionError').textContent=e.message;$('loginError').textContent=e.message;}finally{busy=false;controls();}}
+ $('logout').addEventListener('click',logoutCurrent);$('logoutOld').addEventListener('click',logoutCurrent);
  $('refresh').addEventListener('click',async()=>{if(busy)return;busy=true;controls();$('sessionError').textContent='';try{await refresh();}catch(e){status=null;$('sessionError').textContent=e.message;}finally{busy=false;controls();}});
  $('adminRun').addEventListener('click',()=>run('admin'));$('teacherRun').addEventListener('click',()=>run('teacher'));$('offRun').addEventListener('click',()=>run('off'));
  $('download').addEventListener('click',()=>{if(busy||!history.length)return;const latest=kind=>history.filter(x=>x.kind===kind).at(-1)?.status==='passed';const report={format:'HTB-PILOT-REPORT-1',createdAt:new Date().toISOString(),syntheticOnly:true,threeChecksPassed:['admin-pilot50','teacher-denied','write-off'].every(latest),realWritesApproved:false,runs:history};const url=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='HTB_Pilot_KetQua_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
