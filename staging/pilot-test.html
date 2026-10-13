@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<title>HTB — Pilot ghi điểm giả (Appwrite)</title>
+<style>
+:root{color-scheme:light;font:16px system-ui,-apple-system,'Segoe UI',sans-serif;color:#173659;background:#eff4fb}
+*{box-sizing:border-box}main{max-width:800px;margin:35px auto;background:#fff;border-radius:18px;padding:26px;box-shadow:0 10px 32px #15396212}
+h1{margin:0;color:#0e386c;font-size:25px}h2{font-size:18px;color:#143e70;margin:16px 0 8px}
+p{line-height:1.5;color:#456483}.warn{background:#fff3dc;padding:12px;border-left:4px solid #d98b1b;border-radius:7px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}label{display:block;font-weight:650;font-size:14px;margin:12px 0 5px}
+input{width:100%;height:42px;border:1px solid #b8cce5;border-radius:8px;padding:10px;font-size:16px}
+button{border:0;border-radius:8px;background:#2067b1;color:white;font-weight:650;padding:12px;cursor:pointer}
+button.secondary{background:#49647f}button:disabled{opacity:.45;cursor:not-allowed}
+.buttons{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.card{padding:16px;background:#f4f8fd;border-radius:12px;margin-top:16px}
+#status{min-height:24px;font-weight:600}#status.ok{color:#137c50}#status.error{color:#a52d3c}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;font-size:12px;background:#e9f0fa;border-radius:10px;padding:16px}
+small{color:#637d99}code{background:#e9f0fa;padding:2px 4px;border-radius:3px}
+@media(max-width:620px){main{margin:10px;padding:16px}.grid{grid-template-columns:1fr}.buttons button{width:100%}}
+</style>
+</head><body>
+<main>
+<h1>HTB — Kiểm thử ghi điểm giả (Pilot)</h1>
+<p class="warn"><strong>Chỉ dữ liệu thử nghiệm:</strong> năm 2026–2027, đợt <code>PILOT-TEST</code>, khối 10, môn Toán, số phách <code>TEST-HTB-001</code>, phòng <code>PHONG-TEST</code>. Không nhập thông tin học sinh thật. Tài khoản <strong>admin</strong> mới được tạo số phách và lưu nháp.</p>
+<form id="loginForm"><div class="grid"><div><label for="email">Email quản trị Appwrite</label><input type="email" id="email" required autocomplete="username"></div><div><label for="password">Mật khẩu</label><input type="password" id="password" required autocomplete="current-password"></div></div>
+<div class="buttons"><button id="login" type="submit">Đăng nhập và kiểm tra</button><button id="logout" class="secondary" type="button">Đăng xuất</button></div></form>
+<div class="card">
+<h2>1. Xác nhận Pilot</h2><p>Bản Worker mới mặc định khóa mọi thao tác ghi. Để mở thử nghiệm, bạn phải cấu hình <code>HTB_WRITE_MODE=pilot</code> trong Cloudflare Variables và triển khai lại.</p>
+<div class="buttons"><button id="statusBtn" disabled>Kiểm tra chế độ Pilot</button><button id="mappingBtn" disabled>Tạo số phách mẫu</button></div>
+<h2>2. Lưu thử 1 điểm</h2>
+<label for="score">Điểm mẫu (STT 1)</label><input id="score" type="text" inputmode="decimal" value="8,5" maxlength="5" style="max-width:180px">
+<p>Các dòng STT 2–50 để trống. Chỉ một phiếu mẫu được sử dụng. Nếu yêu cầu bị gián đoạn, nhấn <strong>Kiểm tra/đọc lại</strong> trước khi thử gửi lần nữa.</p>
+<div class="buttons"><button id="saveBtn" disabled>Lưu nháp thử nghiệm</button><button id="readBtn" disabled>Đọc lại phiếu thử</button></div>
+</div>
+<p id="status" role="status"></p>
+<pre id="result" aria-live="polite">Chưa đăng nhập.</pre>
+<small>Không hiển thị JWT hoặc lưu mật khẩu vào localStorage. Appwrite SDK có thể quản lý phiên thông qua cookie hoặc cơ chế phiên của trình duyệt. Xóa trang này sau khi nghiệm thu.</small>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+<script>
+(() => {
+'use strict';
+const ENDPOINT='https://sgp.cloud.appwrite.io/v1';
+const PROJECT='6accf1ea0033555d208d';
+const WORKER='https://htb-scores-api.thpthothibi2.workers.dev/api';
+const KEY={year:'2026 - 2027',period:'PILOT-TEST',grade:'10',subject:'Toán',phach:'TEST-HTB-001'};
+const el=id=>document.getElementById(id);
+const status=(text,type='')=>{el('status').textContent=text;el('status').className=type;};
+const show=data=>{el('result').textContent=JSON.stringify(data,null,2);};
+let ready=false, pilot=false, mapping=false, working=false;
+let version=0;
+let previousRequestId=null;
+let account;
+const accountReady=()=>{
+ if(!window.Appwrite?.Client||!window.Appwrite?.Account)throw Error('Không tải được Appwrite SDK.');
+ const client=new window.Appwrite.Client().setEndpoint(ENDPOINT).setProject(PROJECT);
+ return new window.Appwrite.Account(client);
+};
+const buttons=()=>{
+ el('statusBtn').disabled=!ready||working;
+ el('mappingBtn').disabled=!ready||!pilot||working;
+ el('saveBtn').disabled=!ready||!pilot||!mapping||working;
+ el('readBtn').disabled=!ready||working;
+ el('login').disabled=working;
+};
+async function api(action,payload={}){
+ const result=await account.createJWT();
+ const response=await fetch(WORKER,{method:'POST',mode:'cors',cache:'no-store',credentials:'omit',headers:{'Content-Type':'application/json','Authorization':'Bearer '+result.jwt},body:JSON.stringify({action,payload})});
+ const body=await response.json().catch(()=>({ok:false,error:'Worker không trả JSON'}));
+ if(!response.ok||body.ok!==true)throw Error((body.error||'Worker lỗi')+` (HTTP ${response.status})`);
+ return body.data;
+}
+async function run(task){
+ working=true;buttons();status('Đang xử lý...');
+ try{await task();}catch(e){status(e.message||'Không thể hoàn tất yêu cầu','error');}
+ finally{working=false;el('password').value='';buttons();}
+}
+async function read(){
+ const id=[KEY.year,KEY.period,KEY.grade,KEY.subject,KEY.phach].join('|');
+ const record=await api('loadRecord',{id});
+ version=record.version;
+ show({operation:'readRecord',id:record.id,status:record.status,version:record.version,points:record.rows.filter(x=>x.score!==null&&x.score!==''),total:record.rows.length});
+ status('Đã đọc lại phiếu từ Appwrite.','ok');
+ return record;
+}
+el('loginForm').onsubmit=e=>{e.preventDefault();run(async()=>{
+ account??=accountReady();
+ const email=el('email').value.trim(),password=el('password').value;
+ if(!email||!password)throw Error('Cần nhập email và mật khẩu.');
+ let signed=false;
+ try{const user=await account.get();if(user.email.toLowerCase()!==email.toLowerCase())throw Error('Phiên của tài khoản khác đang tồn tại. Hãy đăng xuất trước.');signed=true;}
+ catch(e){if(e.code!==401)throw e;}
+ if(!signed)await account.createEmailPasswordSession({email,password});
+ const init=await api('bootstrap');
+ if(init.user?.role!=='admin')throw Error('Chỉ quản trị viên được kiểm thử ghi.');
+ ready=true;show({user:{name:init.user.name,role:init.user.role}});
+ const test=await api('pilotStatus');pilot=test.enabled;
+ show({role:init.user.role,mode:pilot?'pilot':'off',scope:test.scope});
+ status(pilot?'Đã xác minh admin; chế độ Pilot đang mở.':'Đã xác minh admin. Worker đang khóa ghi; xem hướng dẫn bật Pilot.','ok');
+ });};
+el('logout').onclick=()=>run(async()=>{if(account){try{await account.deleteSession({sessionId:'current'});}catch(e){if(e.code!==401)throw e;}}ready=false;mapping=false;pilot=false;version=0;previousRequestId=null;show({status:'signed_out'});status('Đã đăng xuất.');});
+el('statusBtn').onclick=()=>run(async()=>{const r=await api('pilotStatus');pilot=r.enabled;show(r);status(pilot?'Pilot đang bật.':'Pilot đang tắt.','ok');});
+el('mappingBtn').onclick=()=>run(async()=>{if(!confirm('Chỉ tạo số phách GIẢ TEST-HTB-001 ở đợt PILOT-TEST. Tiếp tục?'))return;
+ const r=await api('pilotCreateMapping');mapping=true;show(r);status(r.created?'Đã tạo số phách thử.':'Số phách thử đã tồn tại.','ok');});
+el('saveBtn').onclick=()=>run(async()=>{if(!confirm('Lưu duy nhất 1 điểm mẫu trong bảng Appwrite cho đợt PILOT-TEST?'))return;
+ const score=el('score').value.trim();if(!/^\d{1,2}([.,]\d{1,2})?$/.test(score)||Number(score.replace(',','.'))>10)throw Error('Điểm mẫu phải từ 0 đến 10.');
+ // One request ID per manual save; never automatically retry on timeout.
+ previousRequestId=crypto.randomUUID().replaceAll('-','').slice(0,32);
+ const rows=Array.from({length:50},(_,i)=>({stt:i+1,score:i===0?score:null,note:''}));
+ const r=await api('pilotSaveRecord',{version,requestId:previousRequestId,rows});
+ version=r.record.version;show({operation:'saved',version,status:r.record.status,points:r.record.rows.filter(x=>x.score!==null)});
+ status('Đã lưu nháp thử nghiệm. Hãy nhấn Đọc lại để xác nhận.','ok');
+ });
+el('readBtn').onclick=()=>run(read);
+if(!window.Appwrite){status('Không tải được thư viện Appwrite SDK.','error');el('login').disabled=true;}
+buttons();
+})();
+</script>
+</body></html>
