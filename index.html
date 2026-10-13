@@ -26,6 +26,9 @@ try{
   try{await account.deleteSession({sessionId:'current'})}catch{}
   await account.createEmailPasswordSession({email:document.getElementById('email').value.trim(),password:document.getElementById('password').value});
   document.getElementById('password').value='';
+  if (!email || !password) {
+  throw new Error('Vui lòng nhập đầy đủ email và mật khẩu.');
+}
   const jwt=await account.createJWT();
   const response=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt.jwt},body:'{}',cache:'no-store'});
   const body=await response.json().catch(()=>({ok:false,error:'Worker không trả JSON'}));
