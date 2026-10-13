@@ -39,6 +39,7 @@ form.addEventListener('submit', async (event) => {
     let signedIn = false;
     try {
       const current = await account.get();
+      logout.hidden = false;
       signedIn = current.email?.toLowerCase() === email.toLowerCase();
       if (!signedIn) {
         throw new Error('Trình duyệt đang có phiên của tài khoản khác. Hãy đăng xuất phiên đó trước.');
@@ -48,7 +49,8 @@ form.addEventListener('submit', async (event) => {
       if (error?.code && error.code !== 401) throw error;
     }
     if (!signedIn) {
-      await account.createEmailPasswordSession({ email, password });
+      await account.createEmailPasswordSession(email, password);
+      logout.hidden = false;
     }
     show('Đã đăng nhập Appwrite. Đang xác minh quyền trên Cloudflare...');
     const jwtResponse = await account.createJWT();
@@ -86,7 +88,7 @@ form.addEventListener('submit', async (event) => {
 logout.addEventListener('click', async () => {
   logout.disabled = true;
   try {
-    await account.deleteSession({ sessionId: 'current' });
+    await account.deleteSession('current');
     show('Đã đăng xuất phiên kiểm thử.');
     logout.hidden = true;
     result.hidden = true;
