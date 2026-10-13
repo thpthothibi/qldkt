@@ -1,107 +1,15 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>HTB — Kiểm thử Appwrite Auth (đã sửa)</title>
-<style>:root{font-family:system-ui,-apple-system,Segoe UI,Arial;color:#17345c;background:#edf3fb}*{box-sizing:border-box}main{max-width:510px;margin:7vh auto;padding:30px;background:white;border-radius:20px;box-shadow:0 12px 44px #17406a18}h1{font-size:24px;margin:0 0 10px}p{line-height:1.5;color:#637894}label{display:block;margin-top:18px;font-size:14px;font-weight:650}input{width:100%;border:1px solid #c8d7e9;border-radius:10px;padding:13px;margin-top:6px;font-size:16px}button{border:0;background:#1763bb;color:white;border-radius:10px;padding:13px 16px;font-size:15px;font-weight:650;cursor:pointer;margin-top:20px;width:100%}button:disabled{opacity:.6}pre{padding:15px;white-space:pre-wrap;overflow-wrap:anywhere;background:#f0f5fc;border-radius:10px;font-size:13px}small{color:#64748b}.error{color:#a21d2c}.good{color:#126b43}.warn{color:#8c5b10}code{font-size:13px}</style></head>
-<body><main><h1>Kiểm thử đăng nhập HTB</h1><p>Chỉ dành cho quản trị viên: Appwrite Auth → JWT → Cloudflare Worker <code>/me</code>.</p><form id="login"><label for="email">Email Appwrite Auth</label><input id="email" type="email" autocomplete="username" required><label for="password">Mật khẩu</label><input id="password" type="password" autocomplete="current-password" required><button id="submit">Đăng nhập và kiểm tra quyền</button></form><button type="button" id="logout" hidden style="background:#64748b">Đăng xuất phiên kiểm thử</button><p id="status" role="status"></p><pre id="result" hidden></pre><small>Trang kiểm thử không tự lưu email, mật khẩu hoặc JWT vào localStorage. Appwrite SDK có thể lưu phiên qua cookie/bộ nhớ trình duyệt. JWT không hiển thị. Nên xóa trang thử nghiệm khỏi GitHub sau khi kiểm tra xong.</small></main>
-<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
-<script>
-if (!window.Appwrite) {
-  document.getElementById("status").textContent="Không tải được thư viện Appwrite SDK. Kiểm tra mạng hoặc CDN.";
-  document.getElementById("status").className="error";
-  document.getElementById("submit").disabled=true;
-  throw Error("Appwrite SDK failed to load");
-}
-const { Client, Account } = window.Appwrite;
-const PROJECT='6accf1ea0033555d208d';
-const ENDPOINT='https://sgp.cloud.appwrite.io/v1';
-const WORKER='https://htb-scores-api.thpthothibi2.workers.dev/me';
-const client=new Client().setEndpoint(ENDPOINT).setProject(PROJECT);
-const account=new Account(client);
-const form=document.getElementById('login'), status=document.getElementById('status'), result=document.getElementById('result'), btn=document.getElementById('submit'), logout=document.getElementById('logout');
-function show(msg,type=''){status.className=type;status.textContent=msg}
-function output(obj){result.hidden=false;result.textContent=JSON.stringify(obj,null,2)}
-function safeError(err){return err?.message||'Lỗi không xác định';}
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  if (btn.disabled) return;
-  const email = document.getElementById('email').value.trim();
-  const passwordField = document.getElementById('password');
-  const password = passwordField.value;
-  result.hidden = true;
-  if (!email || !password) {
-    show('Vui lòng nhập đầy đủ email và mật khẩu.', 'error');
-    return;
-  }
-  btn.disabled = true;
-  logout.hidden = true;
-  try {
-    show('Đang xác thực tài khoản với Appwrite...');
-    // Re-use an existing valid test session if there is one; do not silently delete it.
-    let signedIn = false;
-    try {
-      const current = await account.get();
-      logout.hidden = false;
-      signedIn = current.email?.toLowerCase() === email.toLowerCase();
-      if (!signedIn) {
-        throw new Error('Trình duyệt đang có phiên của tài khoản khác. Hãy đăng xuất phiên đó trước.');
-      }
-    } catch (error) {
-      if (error?.message?.includes('phiên của tài khoản khác')) throw error;
-      if (error?.code && error.code !== 401) throw error;
-    }
-    if (!signedIn) {
-      await account.createEmailPasswordSession(email, password);
-      logout.hidden = false;
-    }
-    show('Đã đăng nhập Appwrite. Đang xác minh quyền trên Cloudflare...');
-    const jwtResponse = await account.createJWT();
-    const response = await fetch(WORKER, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwtResponse.jwt },
-      body: '{}',
-      cache: 'no-store'
-    });
-    const body = await response.json().catch(() => ({ok:false,error:'Worker không trả JSON'}));
-    const data = body?.data;
-    output({
-      httpStatus: response.status,
-      ok: response.ok && body.ok === true,
-      verifiedRole: data?.role ?? null,
-      active: data?.active ?? null,
-      info: body.ok === true ? 'Đã xác minh tài khoản qua Worker' : 'Chưa xác minh',
-      error: body.ok === true ? undefined : body.error
-    });
-    if (response.ok && body.ok === true && data?.role === 'admin') {
-      show('THÀNH CÔNG: Worker xác minh được quyền admin.', 'good');
-    } else if (response.ok && body.ok === true) {
-      show('Xác thực thành công nhưng tài khoản không có quyền admin.', 'warn');
-    } else {
-      show('Worker từ chối xác thực. Xem thông báo bên dưới.', 'error');
-    }
-    logout.hidden = false;
-  } catch (error) {
-    show('Không thể hoàn tất đăng nhập: ' + safeError(error), 'error');
-  } finally {
-    btn.disabled = false;
-    passwordField.value = '';
-  }
-});
-logout.addEventListener('click', async () => {
-  logout.disabled = true;
-  try {
-    await account.deleteSession('current');
-    show('Đã đăng xuất phiên kiểm thử.');
-    logout.hidden = true;
-    result.hidden = true;
-  } catch (error) {
-    if (error?.code === 401) {
-      show('Không có phiên đăng nhập đang hoạt động.', 'warn');
-      logout.hidden = true;
-      result.hidden = true;
-    } else {
-      show('Không đăng xuất được: ' + safeError(error), 'error');
-    }
-  } finally {
-    logout.disabled = false;
-  }
-});
-</script></body></html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer"><meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#143d77"><title>HTB • Quản lý điểm kiểm tra</title>
+<link rel="stylesheet" href="./style.css?v=htb-full-1">
+<link rel="stylesheet" href="./clean.css?v=htb-full-1">
+<link rel="stylesheet" href="./ui.css?v=htb-full-1">
+<link rel="manifest" href="./manifest.webmanifest"></head><body>
+<div id="app"></div><div id="toast" role="status"></div><dialog id="modal"></dialog>
+<script src="./appwrite-17.js"></script>
+<script src="./config.js?v=htb-full-1"></script>
+<script src="./bridge.js?v=htb-full-1"></script>
+<script src="./app.js?v=htb-full-1"></script>
+</body></html>
