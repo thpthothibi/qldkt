@@ -20,29 +20,68 @@ const form=document.getElementById('login'), status=document.getElementById('sta
 function show(msg,type=''){status.className=type;status.textContent=msg}
 function output(obj){result.hidden=false;result.textContent=JSON.stringify(obj,null,2)}
 function safeError(err){return err?.message||'Lỗi không xác định';}
-const email = document.getElementById('email').value.trim();
-const password = document.getElementById('password').value;
-
-if (!email || !password) {
-  throw new Error('Vui lòng nhập đầy đủ email và mật khẩu.');
-}
-
-await account.createEmailPasswordSession({
-  email,
-  password
-});
-
-const jwt = await account.createJWT();
-  const response=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt.jwt},body:'{}',cache:'no-store'});
-  const body=await response.json().catch(()=>({ok:false,error:'Worker không trả JSON'}));
-  const data=body?.data;
-  output({httpStatus:response.status,ok:body.ok===true,verifiedRole:data?.role??null,active:body.ok===true,info:body.ok===true?'Đã xác minh tài khoản qua Worker':'Chưa xác minh',error:body.ok===true?undefined:body.error});
-  if(response.ok&&body.ok===true&&data?.role==='admin')show('THÀNH CÔNG: Worker xác minh được quyền admin.','good');
-  else if(response.ok&&body.ok===true)show('Xác thực thành công nhưng tài khoản không có quyền admin.','warn');
-  else show('Worker từ chối xác thực. Xem thông báo bên dưới.','error');
-  logout.hidden=false;
-}catch(err){show('Không thể hoàn tất đăng nhập: '+safeError(err),'error');}
-finally{btn.disabled=false;document.getElementById('password').value=''}
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (btn.disabled) return;
+  const email = document.getElementById('email').value.trim();
+  const passwordField = document.getElementById('password');
+  const password = passwordField.value;
+  result.hidden = true;
+  if (!email || !password) {
+    show('Vui lòng nhập đầy đủ email và mật khẩu.', 'error');
+    return;
+  }
+  btn.disabled = true;
+  logout.hidden = true;
+  try {
+    show('Đang xác thực tài khoản với Appwrite...');
+    // Re-use an existing valid test session if there is one; do not silently delete it.
+    let signedIn = false;
+    try {
+      const current = await account.get();
+      signedIn = current.email?.toLowerCase() === email.toLowerCase();
+      if (!signedIn) {
+        throw new Error('Trình duyệt đang có phiên của tài khoản khác. Hãy đăng xuất phiên đó trước.');
+      }
+    } catch (error) {
+      if (error?.message?.includes('phiên của tài khoản khác')) throw error;
+      if (error?.code && error.code !== 401) throw error;
+    }
+    if (!signedIn) {
+      await account.createEmailPasswordSession({ email, password });
+    }
+    show('Đã đăng nhập Appwrite. Đang xác minh quyền trên Cloudflare...');
+    const jwtResponse = await account.createJWT();
+    const response = await fetch(WORKER, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwtResponse.jwt },
+      body: '{}',
+      cache: 'no-store'
+    });
+    const body = await response.json().catch(() => ({ok:false,error:'Worker không trả JSON'}));
+    const data = body?.data;
+    output({
+      httpStatus: response.status,
+      ok: response.ok && body.ok === true,
+      verifiedRole: data?.role ?? null,
+      active: data?.active ?? null,
+      info: body.ok === true ? 'Đã xác minh tài khoản qua Worker' : 'Chưa xác minh',
+      error: body.ok === true ? undefined : body.error
+    });
+    if (response.ok && body.ok === true && data?.role === 'admin') {
+      show('THÀNH CÔNG: Worker xác minh được quyền admin.', 'good');
+    } else if (response.ok && body.ok === true) {
+      show('Xác thực thành công nhưng tài khoản không có quyền admin.', 'warn');
+    } else {
+      show('Worker từ chối xác thực. Xem thông báo bên dưới.', 'error');
+    }
+    logout.hidden = false;
+  } catch (error) {
+    show('Không thể hoàn tất đăng nhập: ' + safeError(error), 'error');
+  } finally {
+    btn.disabled = false;
+    passwordField.value = '';
+  }
 });
 logout.addEventListener('click',async()=>{try{await account.deleteSession({sessionId:'current'});show('Đã đăng xuất phiên kiểm thử.');}catch(e){show('Không đăng xuất được: '+safeError(e),'error')}logout.hidden=true;result.hidden=true});
 </script></body></html>
