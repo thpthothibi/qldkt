@@ -83,5 +83,10 @@ form.addEventListener('submit', async (event) => {
     passwordField.value = '';
   }
 });
-logout.addEventListener('click',async()=>{try{await account.deleteSession({sessionId:'current'});show('Đã đăng xuất phiên kiểm thử.');}catch(e){show('Không đăng xuất được: '+safeError(e),'error')}logout.hidden=true;result.hidden=true});
+logout.addEventListener('click',async()=>{try {
+  await account.get();
+  await account.deleteSession({ sessionId: 'current' });
+} catch {
+  // Chưa đăng nhập: không có phiên để xóa.
+};show('Đã đăng xuất phiên kiểm thử.');}catch(e){show('Không đăng xuất được: '+safeError(e),'error')}logout.hidden=true;result.hidden=true});
 </script></body></html>
