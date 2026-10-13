@@ -24,9 +24,14 @@ form.addEventListener('submit',async e=>{e.preventDefault();btn.disabled=true;re
 try{
   // Remove only existing test session; avoids "session already active" on repeat testing.
   try{await account.deleteSession({sessionId:'current'})}catch{}
-  await account.createEmailPasswordSession({email:document.getElementById('email').value.trim(),password:document.getElementById('password').value});
-  document.getElementById('password').value='';
-  if (!email || !password) {
+  await account.createEmailPasswordSession({
+  email,
+  password
+});
+  const email = document.getElementById('email').value.trim();
+const password = document.getElementById('password').value;
+
+if (!email || !password) {
   throw new Error('Vui lòng nhập đầy đủ email và mật khẩu.');
 }
   const jwt=await account.createJWT();
