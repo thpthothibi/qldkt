@@ -19,20 +19,19 @@
     return pendingJwt;
   }
   window.HTBAuth = Object.freeze({
-    async login(email,password) {
-      if (typeof email !== 'string' || !email.trim() || !password) throw Error('Vui lòng nhập đủ email và mật khẩu.');
-      clearJwt();
-      try {
-        const current = await account.get();
-        if (current.email.toLowerCase() !== email.trim().toLowerCase()) throw Error('Đang có phiên của tài khoản khác. Hãy đăng xuất trước.');
-        return current;
-      } catch (e) {
-        if (e?.message?.includes('phiên của tài khoản khác')) throw e;
-        if (e?.code !== 401) throw e;
+    async login(username,password) {
+      if(typeof username!=='string'||!username.trim()||!password)throw Error('Nhập SĐT và mật khẩu.');
+      clearJwt();let email=username.trim();
+      if(!email.includes('@')){
+        const phone=email.replace(/[\s().-]/g,'');if(!/^0\d{9}$/.test(phone))throw Error('SĐT phải có 10 số và giữ số 0 đầu.');
+        const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+        try{const res=await fetch(new URL('/phone-login',url.origin).href,{method:'POST',mode:'cors',credentials:'omit',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,password}),signal:controller.signal});
+          const body=await res.json();if(!res.ok||body.ok!==true)throw Error(body.error||'Không đăng nhập được.');email=body.data?.email;if(typeof email!=='string'||!email.includes('@'))throw Error('Phản hồi đăng nhập không hợp lệ.');
+        }finally{clearTimeout(timer);}
       }
-      // Appwrite Web SDK 17.0.0 takes positional arguments.
-      await account.createEmailPasswordSession(email.trim(),password);
-      return account.get();
+      try{const current=await account.get();if(current.email.toLowerCase()!==email.toLowerCase())throw Error('Đang có phiên của tài khoản khác. Hãy đăng xuất trước.');return current;}
+      catch(e){if(e?.message?.includes('phiên của tài khoản khác')||e?.code!==401)throw e;}
+      await account.createEmailPasswordSession(email,password);return account.get();
     },
     async requestPasswordReset(email) {
       if(typeof email!=='string'||!email.trim())throw Error('Nhập email đã đăng ký.');
@@ -49,7 +48,7 @@
       clearJwt();
     }
   });
-  const readActions = new Set(['bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady']);
+  const readActions = new Set(['bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword']);
   window.HTBRemote = async (action,payload={}) => {
     if(!readActions.has(action))throw Error('Staging chỉ đọc; thao tác này chưa được nghiệm thu.');
     if(action==='pilot50SaveRecord' && (config.enablePilotUI!==true || !Array.isArray(payload?.rows) || payload.rows.length!==50)) throw Error('Phiếu thử không hợp lệ.');

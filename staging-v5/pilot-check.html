@@ -13,7 +13,7 @@
 <main>
 <div class="warning"><strong>Chỉ thử phiếu giả TEST-HTB-001.</strong> Bộ thử admin sẽ thay điểm và ghi chú của phiếu giả bằng mẫu tự tạo, gồm bốn phiên bản mới nếu chạy đạt. Không nhập thông tin học sinh thật. Kết quả đạt không tự mở lưu điểm thật.</div>
 <div class="grid">
-<section id="loginCard"><h2>Đăng nhập Appwrite</h2><p class="muted">Dùng admin để chạy bộ thử; dùng giáo viên để kiểm tra từ chối quyền.</p><form id="loginForm"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required><label for="password">Mật khẩu</label><input id="password" type="password" autocomplete="current-password" required><div class="actions"><button id="loginButton" class="primary" type="submit">Đăng nhập</button><button id="logoutOld" type="button">Đăng xuất phiên cũ</button></div></form><div class="error" id="loginError" role="alert"></div></section>
+<section id="loginCard"><h2>Đăng nhập Appwrite</h2><p class="muted">Dùng admin để chạy bộ thử; dùng giáo viên để kiểm tra từ chối quyền.</p><form id="loginForm"><label for="email">SĐT / email admin</label><input id="email" type="text" autocomplete="username" required><label for="password">Mật khẩu</label><input id="password" type="password" autocomplete="current-password" required><div class="actions"><button id="loginButton" class="primary" type="submit">Đăng nhập</button><button id="logoutOld" type="button">Đăng xuất phiên cũ</button></div></form><div class="error" id="loginError" role="alert"></div></section>
 <section id="sessionCard" class="hidden"><h2>Phiên kiểm tra</h2><div class="state"><div><span class="pill" id="role">—</span><p id="mode" class="muted">Chưa đọc trạng thái Worker.</p></div><button id="logout" type="button">Đăng xuất</button></div><div class="actions"><button id="refresh" type="button">Đọc lại trạng thái</button></div><div class="error" id="sessionError" role="alert"></div></section>
 <section><h2>Phiếu duy nhất được kiểm tra</h2><p><strong>2026 - 2027 · PILOT-TEST</strong></p><p>Khối 10 · Toán · PHONG-TEST<br>Số phách <strong>TEST-HTB-001</strong><br>Ngày kiểm tra 13/10/2026</p><p class="muted">Chỉ dùng email/mật khẩu Appwrite. Không yêu cầu API Key. Không lưu mật khẩu hoặc JWT vào báo cáo.</p></section>
 </div>
@@ -21,8 +21,8 @@
 <section><div class="state"><h2>Kết quả và báo cáo</h2><button id="download" disabled>Tải báo cáo JSON</button></div><div class="checks" id="summary"></div><div id="log"><p class="muted">Kết quả sẽ xuất hiện tại đây. Không có thao tác ghi nào tự chạy khi mở trang.</p></div><p class="muted">Báo cáo chỉ ghi các phép thử trong phiên đang mở. Chưa kiểm tra tải 100 người, quyền bảng Appwrite trực tiếp, dữ liệu thật hoặc quy trình ký số.</p></section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
-<script src="./config.js?v=htb-stage-v5-teachers-1"></script>
-<script src="./bridge.js?v=htb-stage-v5-teachers-1"></script>
-<script src="./pilot-runner.js?v=htb-stage-v5-teachers-1"></script>
-<script src="./pilot-check.js?v=htb-stage-v5-teachers-1"></script>
+<script src="./config.js?v=htb-stage-v51-phone-1"></script>
+<script src="./bridge.js?v=htb-stage-v51-phone-1"></script>
+<script src="./pilot-runner.js?v=htb-stage-v51-phone-1"></script>
+<script src="./pilot-check.js?v=htb-stage-v51-phone-1"></script>
 </body></html>
