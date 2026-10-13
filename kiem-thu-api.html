@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer"><title>HTB — Kiểm thử Cloudflare /api</title>
+<style>*{box-sizing:border-box}body{background:#edf3fb;color:#17345c;font-family:system-ui,Arial;margin:0;padding:24px}.card{max-width:640px;background:#fff;border-radius:18px;margin:35px auto;padding:30px;box-shadow:0 12px 35px #17406a14}label{display:block;margin:16px 0 6px;font-weight:600}input,button{width:100%;padding:13px;border-radius:10px;font-size:15px}input{border:1px solid #b5c7db}button{border:0;background:#165cae;color:white;font-weight:600;margin-top:15px;cursor:pointer}button[disabled]{opacity:.6}.muted{color:#657896;font-size:13px}.bad{color:#a22}.good{color:#166c42}pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:14px;background:#eef3fa;border-radius:10px;font-size:13px}</style>
+</head><body><section class="card"><h2>Kiểm thử API nhập điểm HTB</h2>
+<p class="muted">Chỉ đọc dữ liệu, không lưu điểm. Dùng trên GitHub Pages đã đăng ký Appwrite Web Platform.</p>
+<form id="login"><label>Email quản trị Appwrite</label><input id="email" type="email" required autocomplete="username"><label>Mật khẩu</label><input id="password" type="password" required autocomplete="current-password"><button id="submit" type="submit">Đăng nhập và thử API</button></form>
+<button id="logout" hidden type="button" style="background:#6b7c94">Đăng xuất thử nghiệm</button>
+<p id="status" role="status"></p><pre id="result" hidden></pre>
+<p class="muted">Không ghi mật khẩu/JWT vào localStorage, không in JWT ra màn hình. Appwrite SDK có thể quản lý phiên bằng cookie hoặc cơ chế lưu phiên của trình duyệt. Xóa trang này sau thử nghiệm.</p>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+<script>
+(() => {
+  const PROJECT='6accf1ea0033555d208d';
+  const ENDPOINT='https://sgp.cloud.appwrite.io/v1';
+  const WORKER='https://htb-scores-api.thpthothibi2.workers.dev/api';
+  const $=id=>document.getElementById(id);
+  const status=$('status');const result=$('result');let account;
+  function say(msg,ok){status.className=ok===undefined?'':ok?'good':'bad';status.textContent=msg;}
+  if(!window.Appwrite){say('Không tải được Appwrite SDK.',false);$('submit').disabled=true;return;}
+  const client=new Appwrite.Client().setEndpoint(ENDPOINT).setProject(PROJECT);
+  account=new Appwrite.Account(client);
+  async function request(jwt,action,payload){
+    const response=await fetch(WORKER,{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt},body:JSON.stringify({action,payload})});
+    const body=await response.json().catch(()=>({ok:false,error:'Worker không trả về JSON'}));
+    if(!response.ok||body.ok!==true)throw new Error(`[${response.status}] ${body.error||'API lỗi'}`);
+    return body.data;
+  }
+  $('login').addEventListener('submit',async event=>{
+    event.preventDefault();const email=$('email').value.trim(),password=$('password').value;
+    if(!email||!password){say('Vui lòng nhập đủ email và mật khẩu.',false);return;}
+    $('submit').disabled=true;result.hidden=true;say('Đang xác thực và đọc dữ liệu...');
+    try{
+      try{const current=await account.get();if(current.email.toLowerCase()!==email.toLowerCase())throw new Error('Đang có phiên tài khoản khác: hãy đăng xuất trước.');}
+      catch(e){if(e.message?.includes('phiên tài khoản khác'))throw e;if(e.code&&e.code!==401)throw e;await account.createEmailPasswordSession({email,password});}
+      const jwt=(await account.createJWT()).jwt;
+      const bootstrap=await request(jwt,'bootstrap',{});
+      const year=bootstrap.config.years[0],period=bootstrap.config.periods[0];
+      const list=await request(jwt,'list',{year,period});
+      result.textContent=JSON.stringify({user:{name:bootstrap.user.name,role:bootstrap.user.role},config:bootstrap.config,summary:{year,period,records:list.records.length,mappings:list.mappings.length,roster:list.roster.length}},null,2);
+      result.hidden=false;$('logout').hidden=false;say('Thành công: đã đọc danh mục và danh sách từ Cloudflare /api.',true);
+    }catch(e){say(e.message||'Lỗi kiểm thử',false);}finally{$('password').value='';$('submit').disabled=false;}
+  });
+  $('logout').addEventListener('click',async()=>{try{await account.deleteSession({sessionId:'current'});say('Đã đăng xuất phiên kiểm thử.');}catch(e){say(e.message||'Không đăng xuất được',false);}result.hidden=true;$('logout').hidden=true;});
+})();
+</script></body></html>
