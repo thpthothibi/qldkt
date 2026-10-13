@@ -20,21 +20,19 @@ const form=document.getElementById('login'), status=document.getElementById('sta
 function show(msg,type=''){status.className=type;status.textContent=msg}
 function output(obj){result.hidden=false;result.textContent=JSON.stringify(obj,null,2)}
 function safeError(err){return err?.message||'Lỗi không xác định';}
-form.addEventListener('submit',async e=>{e.preventDefault();btn.disabled=true;result.hidden=true;logout.hidden=true;show('Đang đăng nhập và xác minh…');
-try{
-  // Remove only existing test session; avoids "session already active" on repeat testing.
-  try{await account.deleteSession({sessionId:'current'})}catch{}
-  await account.createEmailPasswordSession({
-  email,
-  password
-});
-  const email = document.getElementById('email').value.trim();
+const email = document.getElementById('email').value.trim();
 const password = document.getElementById('password').value;
 
 if (!email || !password) {
   throw new Error('Vui lòng nhập đầy đủ email và mật khẩu.');
 }
-  const jwt=await account.createJWT();
+
+await account.createEmailPasswordSession({
+  email,
+  password
+});
+
+const jwt = await account.createJWT();
   const response=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt.jwt},body:'{}',cache:'no-store'});
   const body=await response.json().catch(()=>({ok:false,error:'Worker không trả JSON'}));
   const data=body?.data;
