@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>HTB — Kiểm thử Appwrite Auth</title>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>HTB — Kiểm thử Appwrite Auth (đã sửa)</title>
 <style>:root{font-family:system-ui,-apple-system,Segoe UI,Arial;color:#17345c;background:#edf3fb}*{box-sizing:border-box}main{max-width:510px;margin:7vh auto;padding:30px;background:white;border-radius:20px;box-shadow:0 12px 44px #17406a18}h1{font-size:24px;margin:0 0 10px}p{line-height:1.5;color:#637894}label{display:block;margin-top:18px;font-size:14px;font-weight:650}input{width:100%;border:1px solid #c8d7e9;border-radius:10px;padding:13px;margin-top:6px;font-size:16px}button{border:0;background:#1763bb;color:white;border-radius:10px;padding:13px 16px;font-size:15px;font-weight:650;cursor:pointer;margin-top:20px;width:100%}button:disabled{opacity:.6}pre{padding:15px;white-space:pre-wrap;overflow-wrap:anywhere;background:#f0f5fc;border-radius:10px;font-size:13px}small{color:#64748b}.error{color:#a21d2c}.good{color:#126b43}.warn{color:#8c5b10}code{font-size:13px}</style></head>
-<body><main><h1>Kiểm thử đăng nhập HTB</h1><p>Chỉ dành cho quản trị viên: Appwrite Auth → JWT → Cloudflare Worker <code>/me</code>.</p><form id="login"><label for="email">Email Appwrite Auth</label><input id="email" type="email" autocomplete="username" required><label for="password">Mật khẩu</label><input id="password" type="password" autocomplete="current-password" required><button id="submit">Đăng nhập và kiểm tra quyền</button></form><button type="button" id="logout" hidden style="background:#64748b">Đăng xuất phiên kiểm thử</button><p id="status" role="status"></p><pre id="result" hidden></pre><small>Không lưu email, mật khẩu, phiên hoặc JWT vào localStorage. Mã JWT không hiển thị. Trang chỉ dành cho thử nghiệm và nên xóa khỏi GitHub sau khi xác minh thành công.</small></main>
+<body><main><h1>Kiểm thử đăng nhập HTB</h1><p>Chỉ dành cho quản trị viên: Appwrite Auth → JWT → Cloudflare Worker <code>/me</code>.</p><form id="login"><label for="email">Email Appwrite Auth</label><input id="email" type="email" autocomplete="username" required><label for="password">Mật khẩu</label><input id="password" type="password" autocomplete="current-password" required><button id="submit">Đăng nhập và kiểm tra quyền</button></form><button type="button" id="logout" hidden style="background:#64748b">Đăng xuất phiên kiểm thử</button><p id="status" role="status"></p><pre id="result" hidden></pre><small>Trang kiểm thử không tự lưu email, mật khẩu hoặc JWT vào localStorage. Appwrite SDK có thể lưu phiên qua cookie/bộ nhớ trình duyệt. JWT không hiển thị. Nên xóa trang thử nghiệm khỏi GitHub sau khi kiểm tra xong.</small></main>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
 <script>
 if (!window.Appwrite) {
@@ -83,10 +83,23 @@ form.addEventListener('submit', async (event) => {
     passwordField.value = '';
   }
 });
-logout.addEventListener('click',async()=>{try {
-  await account.get();
-  await account.deleteSession({ sessionId: 'current' });
-} catch {
-  // Chưa đăng nhập: không có phiên để xóa.
-};show('Đã đăng xuất phiên kiểm thử.');}catch(e){show('Không đăng xuất được: '+safeError(e),'error')}logout.hidden=true;result.hidden=true});
+logout.addEventListener('click', async () => {
+  logout.disabled = true;
+  try {
+    await account.deleteSession({ sessionId: 'current' });
+    show('Đã đăng xuất phiên kiểm thử.');
+    logout.hidden = true;
+    result.hidden = true;
+  } catch (error) {
+    if (error?.code === 401) {
+      show('Không có phiên đăng nhập đang hoạt động.', 'warn');
+      logout.hidden = true;
+      result.hidden = true;
+    } else {
+      show('Không đăng xuất được: ' + safeError(error), 'error');
+    }
+  } finally {
+    logout.disabled = false;
+  }
+});
 </script></body></html>
