@@ -24,7 +24,7 @@
       clearJwt();let email=username.trim();
       if(!email.includes('@')){
         const phone=email.replace(/[\s().-]/g,'');if(!/^0\d{9}$/.test(phone))throw Error('SĐT phải có 10 số và giữ số 0 đầu.');
-        const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+        const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),action==='hqgdSaveMatrix'?120000:30000);
         try{const res=await fetch(new URL('/phone-login',url.origin).href,{method:'POST',mode:'cors',credentials:'omit',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,password}),signal:controller.signal});
           const body=await res.json();if(!res.ok||body.ok!==true)throw Error(body.error||'Không đăng nhập được.');email=body.data?.email;if(typeof email!=='string'||!email.includes('@'))throw Error('Phản hồi đăng nhập không hợp lệ.');
         }finally{clearTimeout(timer);}
@@ -48,7 +48,7 @@
       clearJwt();
     }
   });
-  const readActions = new Set(['bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','listPage','recordBatch','saveRecord','reopen','import','addConfig','resetPassword','setActive','setSubject','hqgdSetDepartment','hqgdSetRole','hqgdDirectory','hqgdDispatch','hqgdInbox','hqgdRevoke']);
+  const readActions = new Set(['bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','listPage','recordBatch','saveRecord','reopen','import','addConfig','resetPassword','setActive','setSubject','hqgdSaveMatrix','hqgdSetDepartment','hqgdSetRole','hqgdDirectory','hqgdDispatch','hqgdInbox','hqgdRevoke']);
   window.HTBRemote = async (action,payload={}) => {
     if(!readActions.has(action))throw Error('Staging chỉ đọc; thao tác này chưa được nghiệm thu.');
     if(action==='pilot50SaveRecord' && (config.enablePilotUI!==true || !Array.isArray(payload?.rows) || payload.rows.length!==50)) throw Error('Phiếu thử không hợp lệ.');
@@ -56,7 +56,7 @@
     if(typeof action !== 'string' || !action || !payload || typeof payload !== 'object' || Array.isArray(payload)) throw Error('Yêu cầu không hợp lệ.');
     const token = await jwt();
     const controller = new AbortController();
-    const timer = setTimeout(()=>controller.abort(),30000);
+    const timer = setTimeout(()=>controller.abort(),action==='hqgdSaveMatrix'?120000:30000);
     try {
       const res = await fetch(url.href,{method:'POST',mode:'cors',credentials:'omit',cache:'no-store',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
