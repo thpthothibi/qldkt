@@ -48,7 +48,7 @@
       clearJwt();
     }
   });
-  const readActions = new Set(['bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','listPage','recordBatch','saveRecord','reopen','import','addConfig','resetPassword','setActive','setSubject','hqgdSaveMatrix','hqgdSetDepartment','hqgdSetRole','hqgdDirectory','hqgdDispatch','hqgdInbox','hqgdRevoke']);
+  const readActions = new Set(['getProfileSignature','saveProfileSignature','bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','listPage','recordBatch','saveRecord','reopen','import','addConfig','resetPassword','setActive','setSubject','hqgdSaveMatrix','hqgdSetDepartment','hqgdSetRole','hqgdDirectory','hqgdDispatch','hqgdInbox','hqgdRevoke']);
   window.HTBRemote = async (action,payload={}) => {
     if(!readActions.has(action))throw Error('Staging chỉ đọc; thao tác này chưa được nghiệm thu.');
     if(action==='pilot50SaveRecord' && (config.enablePilotUI!==true || !Array.isArray(payload?.rows) || payload.rows.length!==50)) throw Error('Phiếu thử không hợp lệ.');
