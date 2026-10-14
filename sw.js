@@ -1,4 +1,4 @@
-const CACHE='htb-public-v153';
+const CACHE='htb-public-htb-release-20261014-r1';
 const PUBLIC=new Set(['app.js','style.css','clean.css','ui.css','school-logo.png','transport.js','pwa.js','xlsx.full.min.js','manifest.webmanifest','favicon.png','favicon.ico','icons/icon-192.png','icons/icon-512.png','offline.html']);
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.add(new URL('offline.html',self.registration.scope))).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('htb-public-')||k.startsWith('htb-offline-'))&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

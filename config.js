@@ -2,7 +2,7 @@
 window.HTB_CONFIG = Object.freeze({
   mode: 'live',
   transport: 'cloudflare',
-  enablePilotUI: true,
+  enablePilotUI: false,
   appwriteEndpoint: 'https://sgp.cloud.appwrite.io/v1',
   appwriteProjectId: '6accf1ea0033555d208d',
   workerApiUrl: 'https://htb-scores-api.thpthothibi2.workers.dev/api'

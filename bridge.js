@@ -48,7 +48,7 @@
       clearJwt();
     }
   });
-  const readActions = new Set(['bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','listPage','recordBatch','saveRecord','reopen','import','addConfig','resetPassword','setActive','setSubject']);
+  const readActions = new Set(['bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','listPage','recordBatch','saveRecord','reopen','import','addConfig','resetPassword','setActive','setSubject','hqgdSetDepartment','hqgdSetRole','hqgdDirectory','hqgdDispatch','hqgdInbox','hqgdRevoke']);
   window.HTBRemote = async (action,payload={}) => {
     if(!readActions.has(action))throw Error('Staging chỉ đọc; thao tác này chưa được nghiệm thu.');
     if(action==='pilot50SaveRecord' && (config.enablePilotUI!==true || !Array.isArray(payload?.rows) || payload.rows.length!==50)) throw Error('Phiếu thử không hợp lệ.');
@@ -71,5 +71,21 @@
       throw e;
     } finally {clearTimeout(timer);}
   };
+  window.HTBHQGDFiles=Object.freeze({
+    async upload(file,meta){
+      const token=await jwt();const form=new FormData();form.append('file',file);
+      for(const [k,v] of Object.entries(meta))form.append(k,String(v??''));
+      const result=await fetch(new URL('/hqgd/upload',url.origin),{method:'POST',headers:{Authorization:'Bearer '+token},body:form,cache:'no-store'});
+      const body=await result.json().catch(()=>({}));if(!result.ok||!body.ok)throw Error(body.error||'Không tải được PDF lên kho lưu trữ.');return body.data;
+    },
+    async open(reportId){
+      if(!/^[A-Za-z0-9._-]{1,36}$/.test(reportId))throw Error('Mã báo cáo sai.');
+      const token=await jwt();const res=await fetch(new URL('/hqgd/pdf/'+reportId,url.origin),{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+      if(!res.ok){const body=await res.json().catch(()=>({}));throw Error(body.error||'Không mở được PDF.');}
+      const pdf=await res.blob();if(pdf.type!=='application/pdf')throw Error('Định dạng phản hồi không đúng.');
+      const objectUrl=URL.createObjectURL(pdf);const win=window.open(objectUrl,'_blank','noopener');if(!win){const link=document.createElement('a');link.href=objectUrl;link.download='bao-cao-hqgd.pdf';link.click();}
+      setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
+    }
+  });
   let installPrompt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});window.HTBInstall=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;}else alert('Mở menu trình duyệt và chọn Cài ứng dụng / Thêm vào màn hình chính.');};if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
 })();
