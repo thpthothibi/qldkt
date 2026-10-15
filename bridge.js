@@ -8,14 +8,15 @@
   if(url.protocol !== 'https:' || url.pathname !== '/api' || url.username || url.password || url.search || url.hash) throw Error('workerApiUrl không hợp lệ.');
   const client = new window.Appwrite.Client().setEndpoint(config.appwriteEndpoint).setProject(config.appwriteProjectId);
   const account = new window.Appwrite.Account(client);
-  let cachedJwt = null, jwtAt = 0, pendingJwt = null;
-  const clearJwt = () => {cachedJwt=null; jwtAt=0; pendingJwt=null;};
+  let cachedJwt = null, jwtAt = 0, pendingJwt = null, authGeneration = 0;
+  const clearJwt = () => {authGeneration++; cachedJwt=null; jwtAt=0; pendingJwt=null;};
   async function jwt() {
     if(cachedJwt && Date.now() - jwtAt < 5*60*1000) return cachedJwt;
-    if(!pendingJwt) pendingJwt = account.createJWT().then(result => {
+    if(!pendingJwt) { const generation=authGeneration; pendingJwt = account.createJWT().then(result => {
+      if(generation!==authGeneration)throw Error("Phiên đăng nhập đã thay đổi. Vui lòng thử lại.");
       if (!result.jwt) throw Error('Appwrite không tạo được JWT.');
       cachedJwt = result.jwt; jwtAt = Date.now(); return cachedJwt;
-    }).finally(()=>{pendingJwt=null;});
+    }).finally(()=>{if(generation===authGeneration)pendingJwt=null;}); }
     return pendingJwt;
   }
   window.HTBAuth = Object.freeze({
@@ -24,7 +25,7 @@
       clearJwt();let email=username.trim();
       if(!email.includes('@')){
         const phone=email.replace(/[\s().-]/g,'');if(!/^0\d{9}$/.test(phone))throw Error('SĐT phải có 10 số và giữ số 0 đầu.');
-        const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),action==='hqgdSaveMatrix'?120000:30000);
+        const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
         try{const res=await fetch(new URL('/phone-login',url.origin).href,{method:'POST',mode:'cors',credentials:'omit',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,password}),signal:controller.signal});
           const body=await res.json();if(!res.ok||body.ok!==true)throw Error(body.error||'Không đăng nhập được.');email=body.data?.email;if(typeof email!=='string'||!email.includes('@'))throw Error('Phản hồi đăng nhập không hợp lệ.');
         }finally{clearTimeout(timer);}
@@ -48,9 +49,9 @@
       clearJwt();
     }
   });
-  const readActions = new Set(['getProfileSignature','saveProfileSignature','bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','listPage','recordBatch','saveRecord','reopen','import','addConfig','resetPassword','setActive','setSubject','hqgdSaveMatrix','hqgdSetDepartment','hqgdSetRole','hqgdDirectory','hqgdDispatch','hqgdInbox','hqgdRevoke']);
+  const readActions = new Set(['getProfileSignature','saveProfileSignature','bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','listPage','recordBatch','saveRecord','reopen','import','addConfig','resetPassword','setActive','setSubject','hqgdSaveMatrix','hqgdSetDepartment','hqgdSetRole','hqgdDirectory','hqgdDispatch','hqgdInbox','hqgdRevoke','hqgdTemplateList','hqgdClassAverages','hqgdAssignments','hqgdSaveAssignments','hqgdTeacherDirectory','hqgdReportSave','hqgdReportList','hqgdReportGet']);
   window.HTBRemote = async (action,payload={}) => {
-    if(!readActions.has(action))throw Error('Staging chỉ đọc; thao tác này chưa được nghiệm thu.');
+    if(!readActions.has(action))throw Error('Thao tác API không được hỗ trợ. Hãy tải lại trang hoặc kiểm tra phiên bản web.');
     if(action==='pilot50SaveRecord' && (config.enablePilotUI!==true || !Array.isArray(payload?.rows) || payload.rows.length!==50)) throw Error('Phiếu thử không hợp lệ.');
     if(action==='pilotCreateMapping' && config.enablePilotUI!==true)throw Error('Chưa bật giao diện Pilot.');
     if(typeof action !== 'string' || !action || !payload || typeof payload !== 'object' || Array.isArray(payload)) throw Error('Yêu cầu không hợp lệ.');
@@ -71,6 +72,24 @@
       throw e;
     } finally {clearTimeout(timer);}
   };
+  window.HTBHQGDTemplates=Object.freeze({
+    async upload(file,{year,semester,expectedVersion}){
+      if(!/\.xlsx$/i.test(file?.name||'')||file.size<100||file.size>20*1024*1024)throw Error('Chỉ nhận file .xlsx, tối đa 20 MB.');
+      const token=await jwt(),form=new FormData();form.append('file',file);
+      form.append('year',year);form.append('semester',semester);form.append('expectedVersion',expectedVersion||'');
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),90000);
+      try{
+        const res=await fetch(new URL('/hqgd/template/upload',url.origin),{method:'POST',headers:{Authorization:'Bearer '+token},body:form,cache:'no-store',signal:controller.signal});
+        const body=await res.json().catch(()=>({}));if(!res.ok||!body.ok)throw Error(body.error||'Không lưu được mẫu HQGD.');return body.data;
+      }finally{clearTimeout(timer);}
+    },
+    async load(templateId){
+      if(!/^[A-Za-z0-9._-]{1,36}$/.test(templateId))throw Error('Mã mẫu không hợp lệ.');
+      const token=await jwt();const res=await fetch(new URL('/hqgd/template/'+templateId,url.origin),{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+      if(!res.ok){const body=await res.json().catch(()=>({}));throw Error(body.error||'Không tải được mẫu.');}
+      return res.arrayBuffer();
+    }
+  });
   window.HTBHQGDFiles=Object.freeze({
     async upload(file,meta){
       const token=await jwt();const form=new FormData();form.append('file',file);
