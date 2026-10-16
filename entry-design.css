@@ -57,3 +57,32 @@
  @media(max-width:1000px){.entry-redesign{grid-template-columns:1fr}.entry-redesign .stack{display:grid;grid-template-columns:1fr 1fr}.entry-redesign .hint{grid-column:1/-1}}
  @media(max-width:680px){.entry-redesign .paper-head{padding:18px 14px}.entry-redesign .paper-title{gap:10px}.entry-redesign .paper-title h2{font-size:14px}.entry-redesign .paper-icon{width:40px;height:40px;flex-basis:40px}.entry-redesign .eyebrow{font-size:8px}.entry-redesign .fields{gap:14px 10px}.entry-redesign .field input,.entry-redesign .field select{font-size:16px}.entry-redesign .scores input.note{font-size:16px}.entry-redesign .stack{display:flex}.entry-redesign .score-wrap{max-height:520px;overflow:auto}.entry-redesign .table-toolbar{padding:14px}.entry-redesign .scores thead{position:sticky}.entry-redesign .score-footer{font-size:10px;padding:13px}.actionbar .actions button{min-height:44px;font-size:12px}}
 }
+/* Q5 approved dark-blue design and five-column grid */
+@media screen{
+ .sidebar{background:linear-gradient(155deg,#083a78,#072f63)!important}
+ .entry-redesign .paper-title h2{color:#082e6b;font-weight:800}
+ .entry-redesign .table-toolbar{background:#0755ac;color:#fff;border-color:#064894;display:flex;align-items:center}
+ .entry-redesign .scores th{background:#084995!important;color:#fff!important;border-bottom:1px solid #255e9e;border-right:1px solid #7a9ec9}
+ .entry-redesign .scores th:nth-child(2){width:142px}
+ .entry-redesign .scores{min-width:740px}
+ .entry-redesign .scores td{border-right:1px solid #ccdbef;border-bottom:1px solid #d2e0f1}
+ .entry-redesign .scores td:last-child{border-right:0}
+ .entry-redesign .scores tr:nth-child(even){background:#e9f3ff}
+ .entry-redesign .scores input.note{background:#fff;border:1px solid #b7ccec;min-height:40px}
+ .entry-redesign .scores input.score{border:1px solid #b7ccec;color:#092854}
+ .entry-redesign .scores td:nth-child(2){color:#173861}
+ .entry-redesign .stack h3{color:#082e6b}
+ .entry-redesign .progress-fill{background:#075bc7}
+ .entry-redesign .counter{color:#075bc7}
+ .actionbar .actions button.primary{background:#075bc7;border-color:#075bc7}
+ .quick-toggle{display:inline-flex;align-items:center;gap:10px;position:relative;cursor:pointer;font-size:12px;white-space:nowrap;margin-left:auto;color:#fff}
+ .quick-toggle input{position:absolute;width:1px;height:1px;opacity:0}
+ .quick-track{position:relative;width:44px;height:25px;border-radius:18px;background:#7189a7;border:1px solid #a9bfda;transition:background .15s}
+ .quick-track:after{content:'';position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:50%;background:white;transition:transform .15s}
+ .quick-toggle input:checked+.quick-track{background:#00a3f2;border-color:#35bbff}
+ .quick-toggle input:checked+.quick-track:after{transform:translateX(18px)}
+ .quick-toggle input:focus-visible+.quick-track{outline:3px solid white;outline-offset:3px}
+ .quick-toggle input:disabled~span{opacity:.55;cursor:not-allowed}
+ @media(max-width:680px){.quick-toggle{margin-left:0;font-size:11px}.entry-redesign .table-toolbar{gap:12px}}
+ @media(prefers-reduced-motion:reduce){.quick-track,.quick-track:after{transition:none}}
+}
