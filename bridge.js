@@ -30,9 +30,18 @@
           const body=await res.json();if(!res.ok||body.ok!==true)throw Error(body.error||'Không đăng nhập được.');email=body.data?.email;if(typeof email!=='string'||!email.includes('@'))throw Error('Phản hồi đăng nhập không hợp lệ.');
         }finally{clearTimeout(timer);}
       }
-      try{const current=await account.get();if(current.email.toLowerCase()!==email.toLowerCase())throw Error('Đang có phiên của tài khoản khác. Hãy đăng xuất trước.');return current;}
-      catch(e){if(e?.message?.includes('phiên của tài khoản khác')||e?.code!==401)throw e;}
-      await account.createEmailPasswordSession(email,password);return account.get();
+      // Q16: a new session already returns userId; bootstrap supplies the profile.
+      // Avoid two sequential account.get requests on the normal login path.
+      try {
+        const session=await account.createEmailPasswordSession(email,password);
+        if(!session.userId)throw Error('Phiên đăng nhập không có mã tài khoản.');
+        return {$id:session.userId};
+      } catch(e) {
+        if(e?.type!=='user_session_already_exists')throw e;
+        const current=await account.get();
+        if(current.email.toLowerCase()!==email.toLowerCase())throw Error('Đang có phiên của tài khoản khác. Hãy đăng xuất trước.');
+        return current;
+      }
     },
     async requestPasswordReset(email) {
       if(typeof email!=='string'||!email.trim())throw Error('Nhập email đã đăng ký.');

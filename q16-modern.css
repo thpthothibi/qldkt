@@ -1,0 +1,38 @@
+/* Q16: unified blue workspace, scoped to screen to preserve printed forms. */
+@media screen {
+:root{--htb-primary:#1764db;--htb-focus:#2584ee}
+body{background:#f3f7fd!important;color:#20344e;font-family:Arial,sans-serif}
+.sidebar{background:linear-gradient(165deg,#123f87 0%,#0b2b62 100%)!important;border-right:0!important;box-shadow:4px 0 24px #153e7510!important}
+.sidebar .brand{padding-bottom:24px;border-bottom:1px solid #ffffff20}
+.sidebar .brand strong{color:#fff!important;font-size:18px;line-height:1.4}
+.sidebar .brand small{color:#bddaff!important;letter-spacing:1.2px}
+.sidebar .nav-label{color:#9bc2f5!important;font-size:10px;letter-spacing:1.3px;margin-top:24px}
+.sidebar .nav button{border-radius:12px!important;min-height:46px;margin:5px 0!important;padding:12px 14px!important;transition:background .15s,color .15s;gap:12px;font-size:13px!important;font-weight:500!important}
+.sidebar .nav button:not(.active){color:#e1edff!important;background:transparent!important}
+.sidebar .nav button:not(.active) svg{color:#a8ccff!important}
+.sidebar .nav button:not(.active):hover{color:#fff!important;background:#ffffff16!important}
+.sidebar .nav button.active{background:#eaf3ff!important;color:#114eaf!important;box-shadow:0 4px 16px #051f4926!important;font-weight:700!important}
+.sidebar .nav button.active svg{color:#1764db!important}
+.sidebar .nav button.active:before{display:none!important}
+.sidebar .copyright{color:#9bbdeb!important;font-size:9px;line-height:1.7}
+.topbar{background:#fff!important;border-bottom:1px solid #e0e9f5!important;box-shadow:0 2px 10px #203b6410!important}
+.avatar{background:#e5efff!important;color:#1456b8!important;border-radius:12px!important}
+.breadcrumb{color:#6c809a!important}.breadcrumb b{color:#1c457c!important}
+.page-head{padding:4px 0 8px!important}.page-head h1{font-size:23px!important;color:#173e73!important;font-weight:700;letter-spacing:-.5px}.page-head p{color:#6a7e98!important;font-size:13px!important}
+.page-icon{background:#e5efff!important;color:#1764db!important;border:1px solid #d5e5fc!important;border-radius:12px!important}
+.context{background:#fff!important;border:1px solid #dce7f6!important;border-radius:14px!important;box-shadow:0 3px 14px #244c8510!important;padding:14px 18px!important}
+.context label{color:#627b9c!important;letter-spacing:.8px;font-size:10px!important}
+.card{background:#fff!important;border:1px solid #dfe8f4!important;border-radius:16px!important;box-shadow:0 4px 20px #183b6b08!important;overflow:hidden}
+.card-title{background:#f8fbff!important;border-bottom:1px solid #e4edf8!important;padding:16px 20px!important}.card-title h3{color:#204d88!important}
+button{border-radius:9px!important;min-height:36px}button.primary,.modal-actions .primary{background:#1764db!important;border-color:#1764db!important;color:#fff!important;box-shadow:0 3px 8px #1764db20}
+button.primary:hover{background:#1055be!important}button:disabled{cursor:default}
+input,select,textarea{border-color:#ccdbed!important;border-radius:8px!important;color:#233d5c;background:#fff}input:focus,select:focus,textarea:focus{border-color:#3382ec!important}
+.data-table thead th{background:#edf4ff!important;color:#245492!important;border-color:#dae6f5!important}.data-table tbody tr:nth-child(even){background:#f9fbff}.data-table tbody tr:hover{background:#eff6ff}
+.tag:not(.amber):not(.gray){background:#e9f2ff!important;color:#1858b3!important;border:1px solid #d4e4fb!important}
+.note-panel,.htb-list-loading{background:#eff6ff!important;border:1px solid #d4e5fc!important;color:#315d91!important;border-radius:12px!important}
+.connection-state.is-live{background:#eff8ff!important;border:1px solid #d4e9fc!important;color:#256195!important;font-size:11px!important}
+.sample-login{background:radial-gradient(ellipse at 20% 10%,#dcecff,transparent 55%),#f3f7ff!important}.sample-card{border:1px solid #dce7f8!important;border-radius:24px!important;box-shadow:0 18px 60px #194b8c14!important}.sample-badge{background:#eaf2ff!important;color:#1c61bb!important}
+#loginBtn{min-height:46px;background:#1764db!important;color:#fff!important}
+@media(max-width:760px){.page-head h1{font-size:19px!important}.context{padding:12px!important}.topbar{padding:10px 12px!important}.nav button{min-height:46px}.card-title{padding:13px!important}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+}
