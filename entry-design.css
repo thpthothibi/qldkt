@@ -1,0 +1,59 @@
+/* Q4: score entry inspired by the supplied reference, without external fonts. */
+@media screen {
+ body{background:#edf2f8;color:#253f5b}
+ .sidebar{background:linear-gradient(155deg,#204f81,#123860)!important}
+ .sidebar .nav button.active{background:#fff!important;color:#224d79!important;box-shadow:0 5px 14px #0b284b20}
+ .sidebar .nav button{border-radius:12px;min-height:52px}
+ .entry-redesign{display:grid;grid-template-columns:minmax(0,1fr) 286px;gap:24px;align-items:start}
+ .entry-redesign>.card,.entry-redesign .stack>.card{border:1px solid #c8d6e5;border-radius:20px;box-shadow:0 8px 24px #20466f08;overflow:hidden;background:#fff}
+ .entry-redesign .paper-head{padding:28px;background:linear-gradient(115deg,#f8fbff,#e7f0fc);border-bottom:1px solid #c5d5e9}
+ .entry-redesign .paper-title{gap:18px;margin-bottom:28px;align-items:center}
+ .entry-redesign .paper-title h2{font-size:21px;line-height:1.4;letter-spacing:0;color:#203e60;font-weight:750}
+ .entry-redesign .eyebrow{color:#67778b;font-size:10px;letter-spacing:1px;margin-bottom:6px}
+ .entry-redesign .paper-icon{display:grid;width:54px;height:54px;flex:0 0 54px;background:transparent}
+ .entry-redesign .paper-icon img{width:100%;height:100%;object-fit:contain}
+ .entry-redesign .fields{display:grid;grid-template-columns:.7fr 1.2fr 1fr 1fr;gap:18px}
+ .entry-redesign .field label{font-size:12px;font-weight:650;color:#294965;margin-bottom:9px}
+ .entry-redesign .field input,.entry-redesign .field select{height:48px;background:#fff;border:1px solid #b9cce0;border-radius:12px;font-size:14px;width:100%;min-width:0;padding:10px 12px;color:#203d59}
+ .entry-redesign .table-toolbar{background:#dce9f8;padding:18px 24px;border-bottom:1px solid #bfd1e8;color:#254768;gap:14px;flex-wrap:wrap;font-size:12px}
+ .entry-redesign .score-wrap{max-height:580px;overflow:auto;scrollbar-color:#9ab2cc #edf3fa;scrollbar-width:thin}
+ .entry-redesign .scores{width:100%;min-width:620px;table-layout:fixed;border-collapse:separate;border-spacing:0}
+ .entry-redesign .scores thead{position:sticky;top:0;z-index:2}
+ .entry-redesign .scores th{background:#dce9f8!important;font-size:11px!important;padding:17px 12px;color:#254768!important;text-align:left}
+ .entry-redesign .scores th:nth-child(1){width:52px}
+ .entry-redesign .scores th:nth-child(2){width:68px}
+ .entry-redesign .scores th:nth-child(3){width:108px}
+ .entry-redesign .scores th:nth-child(4){width:170px}
+ .entry-redesign .scores td{height:62px;padding:9px 12px;border-bottom:1px solid #e6edf5;font-size:13px}
+ .entry-redesign .scores td:nth-child(2){width:auto;color:#8192a5;text-align:center}
+ .entry-redesign .scores tr:nth-child(even){background:#f1f5fa}
+ .entry-redesign .scores tr:focus-within{background:#e6f5fc;outline:2px solid #21aebc;outline-offset:-2px}
+ .entry-redesign .scores input.score{width:84px;max-width:100%;height:42px;min-height:42px;border:1px dashed #b7c9dc;border-radius:10px;background:#fff;font-size:17px;color:#203e5c;text-align:left;padding:8px 11px}
+ .entry-redesign .scores input.score:focus{outline:2px solid #2f7eb5;outline-offset:0;border-color:transparent;box-shadow:0 0 0 4px #277ab515}
+ .entry-redesign .scores input.score.invalid{border:2px solid #c34848;background:#fff0f0}
+ .entry-redesign .scores input.note{height:42px;width:100%;min-width:0;border:1px solid transparent;background:transparent;font-size:13px;border-radius:8px;padding:8px;color:#233e59}
+ .entry-redesign .scores input.note:hover,.entry-redesign .scores input.note:focus{border-color:#a7c2dc;background:#fff}
+ .entry-redesign .score-words{font-size:13px;color:#314d65;line-height:1.5}
+ .entry-redesign .score-footer{background:#f7faff;padding:14px 20px;color:#54718d}
+ .entry-redesign .stack{display:flex;flex-direction:column;gap:20px}
+ .entry-redesign .progress-card,.entry-redesign .signature-card{padding:25px;border-top:1px solid #c8d6e5}
+ .entry-redesign .stack h3{font-size:17px;font-weight:700;color:#234463;line-height:1.4}
+ .entry-redesign .counter{margin:24px 0;color:#216d9c}
+ .entry-redesign .counter>span{font-size:40px;font-weight:750}
+ .entry-redesign .counter small{font-size:14px;color:#5c6c7d}
+ .entry-redesign .progress-track{height:7px;border-radius:10px;background:#dbe6f4;overflow:hidden}
+ .entry-redesign .progress-fill{height:100%;background:#2876a6;border-radius:10px}
+ .entry-redesign .progress-meta{margin-top:16px;font-size:11px}
+ .entry-redesign .signature-card p{font-size:12px;color:#52677d;line-height:1.75}
+ .entry-redesign .sign-upload{min-height:140px;width:100%;border:1.5px dashed #8da7bf;border-radius:13px;background:linear-gradient(135deg,#f7fbff,#eaf3fc);color:#3d678c;gap:9px}
+ .entry-redesign .sign-upload img{max-height:110px;max-width:100%;object-fit:contain}
+ .entry-redesign .teacher-name{font-weight:700;font-size:14px;margin-top:18px;color:#244763;text-align:center}
+ .entry-redesign .hint{padding:23px;border:1px solid #c6d8ed;background:#e4effd!important;border-radius:18px;font-size:12px;line-height:1.8}
+ .actionbar{background:#f7fbff!important;border-top:1px solid #ccdced;box-shadow:0 -8px 24px #264b730c}
+ .actionbar .actions button{border-radius:12px;min-height:48px;border-color:#b7cce3;background:#eaf3ff;color:#2a5d8a}
+ .actionbar .actions button.primary{background:linear-gradient(110deg,#2d80d3,#205c9d);color:#fff;border-color:#2865a5}
+ @media(min-width:1500px){.entry-redesign{grid-template-columns:minmax(0,1fr) 310px}.entry-redesign .paper-title h2{font-size:24px}.entry-redesign .scores td{height:66px}}
+ @media(max-width:1200px){.entry-redesign{grid-template-columns:minmax(0,1fr) 240px;gap:16px}.entry-redesign .paper-head{padding:20px}.entry-redesign .fields{grid-template-columns:1fr 1fr}.entry-redesign .paper-title h2{font-size:18px}.entry-redesign .progress-card,.entry-redesign .signature-card{padding:20px}}
+ @media(max-width:1000px){.entry-redesign{grid-template-columns:1fr}.entry-redesign .stack{display:grid;grid-template-columns:1fr 1fr}.entry-redesign .hint{grid-column:1/-1}}
+ @media(max-width:680px){.entry-redesign .paper-head{padding:18px 14px}.entry-redesign .paper-title{gap:10px}.entry-redesign .paper-title h2{font-size:14px}.entry-redesign .paper-icon{width:40px;height:40px;flex-basis:40px}.entry-redesign .eyebrow{font-size:8px}.entry-redesign .fields{gap:14px 10px}.entry-redesign .field input,.entry-redesign .field select{font-size:16px}.entry-redesign .scores input.note{font-size:16px}.entry-redesign .stack{display:flex}.entry-redesign .score-wrap{max-height:520px;overflow:auto}.entry-redesign .table-toolbar{padding:14px}.entry-redesign .scores thead{position:sticky}.entry-redesign .score-footer{font-size:10px;padding:13px}.actionbar .actions button{min-height:44px;font-size:12px}}
+}
