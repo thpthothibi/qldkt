@@ -258,7 +258,110 @@ function attachWorkflow(){
  renderWorkflowStats();
 }
 
-window.HTBHQGD={hasUnsaved:()=>reportDirty||books.some(b=>Object.values(b.dirtyByMode||{}).some(Boolean)),clear(){books=[];bookIndex=0;sheetName='';errors=[];busy=false;mode='automatic';reportDirty=false;snapshotRequestId='';templateMeta=[];templateLoadedYear='';templateSerial++;assignedFor='';assignmentByClass.clear();assignmentUsers.clear();assignSerial++;},render(){const context=window.HTBHQGDContext?.();const host=el('content');host.innerHTML=`<section class="card hq-panel"><h2>THỐNG KÊ HIỆU QUẢ GIÁO DỤC · HK1 / HK2</h2><p>Hai chế độ độc lập trên cùng công thức mẫu Excel của trường. <b>Tự động:</b> tổng hợp điểm đã xác nhận. <b>Thủ công:</b> nhập bình quân trực tiếp hoặc từ Excel. Báo cáo chưa có giá trị phê duyệt/ký số.</p><div class="hq-mode-select" role="group" aria-label="Chế độ thống kê"><button type="button" id="hq-mode-automatic" class="hq-mode-active" aria-pressed="true">⚡ Tự động từ điểm đã xác nhận</button><button type="button" id="hq-mode-manual" aria-pressed="false">✍ Thủ công theo Excel</button></div><p class="hq-help">Chuyển chế độ không trộn điểm. Mỗi chế độ giữ bộ số liệu riêng trong phiên làm việc.</p><label>File Excel HK1 / HK2 (chỉ tải một lần)<input id="hq-file" type="file" accept=".xlsx" multiple></label><div class="hq-filters"><label>Học kỳ mẫu cần lưu<select id="hq-template-term"><option value="HK1">HK1</option><option value="HK2">HK2</option></select></label><button type="button" id="hq-template-save">Lưu mẫu lên Appwrite</button><button type="button" id="hq-template-refresh">Tải mẫu đã lưu</button></div><p id="hq-template-status" role="status">Mẫu được quản trị lưu riêng theo năm học. Chỉ tài khoản quản trị được tải và cập nhật.</p><div id="hq-assign-root" class="hq-assign-root"><p>Đọc phân công giáo viên từ Appwrite khi chọn mẫu và môn.</p></div><div class="hq-filters"><label>File<select id="hq-book"></select></label><label>Môn<select id="hq-subject"></select></label><label>Khối<select id="hq-grade"><option value="">Tất cả</option><option>10</option><option>11</option><option>12</option></select></label><label>Tìm giáo viên<input id="hq-teacher-search"></label></div><section id="hq-manual-tools" hidden><h3>Nhập số liệu thủ công từ Excel</h3><p>Tải biểu mẫu nhanh cho môn đang chọn, điền BQ giữa kỳ / học kỳ rồi nhập lại. Hoặc chỉnh trực tiếp các ô D và G trong bảng phía dưới.</p><div class="hq-filters"><button type="button" id="hq-manual-download">Tải bảng Excel để nhập</button><button type="button" id="hq-manual-confirm-template">Dùng số liệu có sẵn trong mẫu</button><label>Nhập bảng số liệu Excel<input type="file" id="hq-manual-import" accept=".xlsx"></label><button type="button" id="hq-manual-apply" disabled>Áp dụng số liệu đã kiểm tra</button></div><p id="hq-manual-status" role="status">Chọn mẫu và môn trước khi nhập.</p></section><section id="hq-auto-tools"><h3>Tổng hợp tự động</h3><div class="hq-filters"><label>Đợt giữa kỳ<select id="hq-live-gk">${(context?.periods||['Giữa HK1','Giữa HK2']).map(x=>`<option>${h(x)}</option>`).join('')}</select></label><label>Đợt học kỳ<select id="hq-live-hk">${(context?.periods||['HK1','HK2']).map(x=>`<option>${h(x)}</option>`).join('')}</select></label></div><p>Năm học lấy điểm: <b>${h(context?.year||'')}</b>. Chỉ dùng phiếu đã xác nhận và chỉ thay số liệu khi đủ điểm các lớp trong môn. Hiệu quả HK1 có sẵn trong mẫu HK2 được giữ nguyên.</p><button id="hq-system" disabled>Tổng hợp từ phiếu đã xác nhận</button><label class="hq-auto-sync-toggle"><input type="checkbox" id="hq-auto-sync"> Tự đồng bộ lại khi chọn môn / học kỳ (có thể tắt)</label></section><div id="hq-workflow-stats" class="hq-workflow-stats" aria-live="polite"></div><div class="hq-report-toolbar"><button id="hq-export" disabled>Xuất Excel đã tính lại</button><button type="button" id="hq-report-save" disabled>Lưu bản chụp chưa duyệt</button><button type="button" id="hq-history-refresh">Xem lịch sử bản chụp</button><button type="button" id="hq-report-print">In / lưu PDF</button></div><p id="hq-report-status" role="status"></p><div id="hq-history" class="hq-history" hidden></div><p id="hq-info" role="status">Chưa chọn file.</p><div id="hq-result"></div><div id="hq-live-teachers" class="hq-panel"><p>Chưa tải phân công giảng dạy từ Appwrite.</p></div></section>${window.HTBHQGDDispatch?.render()||''}`;window.HTBHQGDDispatch?.attach();
+window.HTBHQGD={
+ hasUnsaved:()=>reportDirty||books.some(b=>Object.values(b.dirtyByMode||{}).some(Boolean)),
+ clear(){books=[];bookIndex=0;sheetName='';errors=[];busy=false;mode='automatic';reportDirty=false;snapshotRequestId='';templateMeta=[];templateLoadedYear='';templateSerial++;assignedFor='';assignmentByClass.clear();assignmentUsers.clear();assignSerial++;},
+ render(){
+  const context=window.HTBHQGDContext?.();
+  const host=el('content');
+  host.innerHTML=`
+   <div class="hq-subnav">
+    <div class="hq-subnav-title">
+     <div class="hq-section-label">KHẢO THÍ · THỐNG KÊ CHUYÊN MÔN</div>
+     <h2>THỐNG KÊ HIỆU QUẢ GIÁO DỤC <span>HK1 / HK2</span></h2>
+     <p>Hai chế độ tính độc lập theo mẫu Excel của trường. Báo cáo chưa có giá trị phê duyệt hoặc ký số.</p>
+    </div>
+    <div class="hq-tabs" role="tablist" aria-label="Phân hệ hiệu quả giảng dạy">
+     <button type="button" role="tab" id="hq-tab-calc" aria-controls="hq-pane-calc" aria-selected="true" tabindex="0" class="hq-tab-btn active" data-hq-tab="calc"><span aria-hidden="true">📊</span> <span>1. Tổng hợp &amp; Kết quả</span></button>
+     <button type="button" role="tab" id="hq-tab-setup" aria-controls="hq-pane-setup" aria-selected="false" tabindex="-1" class="hq-tab-btn" data-hq-tab="setup"><span aria-hidden="true">⚙️</span> <span>2. Mẫu Excel &amp; Phân công</span></button>
+     <button type="button" role="tab" id="hq-tab-dispatch" aria-controls="hq-pane-dispatch" aria-selected="false" tabindex="-1" class="hq-tab-btn" data-hq-tab="dispatch"><span aria-hidden="true">📩</span> <span>3. Gửi PDF &amp; Phân quyền Tổ</span></button>
+    </div>
+   </div>
+
+   <section id="hq-pane-calc" class="card hq-panel hq-tab-pane active" role="tabpanel" aria-labelledby="hq-tab-calc" tabindex="0">
+    <div class="hq-panel-heading"><div><h3>Tổng hợp kết quả học kỳ</h3><p>Chọn nguồn dữ liệu, môn học và đối chiếu kết quả theo từng lớp, giáo viên.</p></div><span class="hq-hk-label">${h(context?.year||'Năm học')}</span></div>
+    <div class="hq-mode-select" role="group" aria-label="Chế độ thống kê">
+     <button type="button" id="hq-mode-automatic" class="hq-mode-active" aria-pressed="true">⚡ Tự động từ điểm đã xác nhận</button>
+     <button type="button" id="hq-mode-manual" aria-pressed="false">✍ Thủ công theo Excel</button>
+    </div>
+    <p class="hq-help">Hai chế độ giữ dữ liệu riêng trong phiên, không trộn điểm hoặc tự ghi đè số liệu.</p>
+    <div class="hq-filters hq-main-filters">
+     <label>File mẫu<select id="hq-book" aria-label="Chọn file mẫu HK1 hoặc HK2"></select></label>
+     <label>Môn<select id="hq-subject" aria-label="Chọn môn học"></select></label>
+     <label>Khối<select id="hq-grade"><option value="">Tất cả</option><option>10</option><option>11</option><option>12</option></select></label>
+     <label>Tìm giáo viên<input id="hq-teacher-search" type="search" autocomplete="off" placeholder="Nhập tên giáo viên..."></label>
+    </div>
+
+    <section id="hq-manual-tools" class="hq-source-panel" hidden>
+     <h3>Nhập số liệu thủ công từ Excel</h3>
+     <p>Tải biểu mẫu cho môn đang chọn, điền bình quân giữa kỳ / học kỳ rồi nhập lại. Có thể sửa trực tiếp các ô D và G trong bảng kết quả.</p>
+     <div class="hq-filters">
+      <button type="button" id="hq-manual-download">Tải bảng Excel để nhập</button>
+      <button type="button" id="hq-manual-confirm-template">Dùng số liệu có sẵn trong mẫu</button>
+      <label>Nhập bảng số liệu Excel<input type="file" id="hq-manual-import" accept=".xlsx"></label>
+      <button type="button" id="hq-manual-apply" disabled>Áp dụng số liệu đã kiểm tra</button>
+     </div>
+     <p id="hq-manual-status" role="status">Chọn mẫu và môn trước khi nhập.</p>
+    </section>
+
+    <section id="hq-auto-tools" class="hq-source-panel">
+     <h3>Tổng hợp tự động</h3>
+     <div class="hq-filters">
+      <label>Đợt giữa kỳ<select id="hq-live-gk">${(context?.periods||['Giữa HK1','Giữa HK2']).map(x=>`<option>${h(x)}</option>`).join('')}</select></label>
+      <label>Đợt học kỳ<select id="hq-live-hk">${(context?.periods||['HK1','HK2']).map(x=>`<option>${h(x)}</option>`).join('')}</select></label>
+     </div>
+     <p>Năm học lấy điểm: <b>${h(context?.year||'')}</b>. Chỉ dùng phiếu đã xác nhận, chỉ thay số liệu khi đủ điểm các lớp trong môn. Số liệu HK1 có sẵn trong mẫu HK2 được giữ nguyên.</p>
+     <button type="button" id="hq-system" disabled>Tổng hợp từ phiếu đã xác nhận</button>
+     <label class="hq-auto-sync-toggle"><input type="checkbox" id="hq-auto-sync"> Tự đồng bộ khi chọn môn / học kỳ (có thể tắt để giảm lượt đọc)</label>
+    </section>
+
+    <div id="hq-workflow-stats" class="hq-workflow-stats" aria-live="polite"></div>
+    <div class="hq-report-toolbar">
+     <button type="button" id="hq-export" disabled>Xuất Excel đã tính lại</button>
+     <button type="button" id="hq-report-save" disabled>Lưu bản chụp chưa duyệt</button>
+     <button type="button" id="hq-history-refresh">Xem lịch sử bản chụp</button>
+     <button type="button" id="hq-report-print">In / lưu PDF</button>
+    </div>
+    <p id="hq-report-status" role="status"></p>
+    <div id="hq-history" class="hq-history" hidden></div>
+    <p id="hq-info" role="status">Chưa chọn file.</p>
+    <div id="hq-result"></div>
+    <div id="hq-live-teachers" class="hq-panel"><p>Chưa tải phân công giảng dạy từ Appwrite.</p></div>
+   </section>
+
+   <section id="hq-pane-setup" class="card hq-panel hq-tab-pane" role="tabpanel" aria-labelledby="hq-tab-setup" tabindex="0">
+    <div class="hq-panel-heading"><div><h3>Mẫu Excel &amp; phân công giảng dạy</h3><p>Quản lý mẫu HK1/HK2 và giáo viên dạy từng lớp của năm học.</p></div></div>
+    <div class="hq-setup-label">01 <span>Quản lý file mẫu HK1 / HK2 trên Appwrite</span></div>
+    <p class="hq-help">Mẫu được quản trị lưu riêng theo năm học, chỉ cần tải lên một lần đầu kỳ.</p>
+    <div class="hq-filters">
+     <label>File Excel HK1 / HK2<input id="hq-file" type="file" accept=".xlsx" multiple></label>
+     <label>Học kỳ mẫu cần lưu<select id="hq-template-term"><option value="HK1">HK1</option><option value="HK2">HK2</option></select></label>
+     <button type="button" id="hq-template-save">Lưu mẫu lên Appwrite</button>
+     <button type="button" id="hq-template-refresh">Tải mẫu đã lưu</button>
+    </div>
+    <p id="hq-template-status" role="status">Mẫu được quản trị lưu riêng theo năm học. Chỉ tài khoản quản trị được tải và cập nhật.</p>
+    <div class="hq-setup-label">02 <span>Phân công giáo viên theo lớp</span></div>
+    <div id="hq-assign-root" class="hq-assign-root"><p>Đọc phân công giáo viên từ Appwrite khi chọn mẫu và môn.</p></div>
+   </section>
+
+   <section id="hq-pane-dispatch" class="hq-tab-pane" role="tabpanel" aria-labelledby="hq-tab-dispatch" tabindex="0">
+    ${window.HTBHQGDDispatch?.render()||'<div class="card hq-panel">Chức năng gửi PDF chưa được tải.</div>'}
+   </section>`;
+
+  // Dispatch pane uses server permissions. Defer its API reads until tab 3 is actually opened.
+  let dispatchReady=false;
+  const tabs=[...host.querySelectorAll('[data-hq-tab]')];
+  const activateTab=(name,focus=false)=>{
+   if(!['calc','setup','dispatch'].includes(name))return;
+   for(const btn of tabs){const active=btn.dataset.hqTab===name;btn.classList.toggle('active',active);btn.setAttribute('aria-selected',String(active));btn.tabIndex=active?0:-1;}
+   host.querySelectorAll('.hq-tab-pane').forEach(p=>p.classList.toggle('active',p.id==='hq-pane-'+name));
+   if(name==='dispatch'&&!dispatchReady){dispatchReady=true;window.HTBHQGDDispatch?.attach();}
+   if(focus)host.querySelector('[data-hq-tab="'+name+'"]')?.focus();
+  };
+  tabs.forEach((btn,i)=>{
+   btn.onclick=()=>activateTab(btn.dataset.hqTab);
+   btn.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const j=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;activateTab(tabs[j].dataset.hqTab,true);};
+  });
  if(context?.periods?.includes('HK1'))el('hq-live-hk').value='HK1';
  el('hq-template-save').onclick=()=>saveTemplate(el('hq-template-term').value).catch(e=>{el('hq-template-status').textContent=e.message;});
  el('hq-template-refresh').onclick=()=>loadTemplates();
