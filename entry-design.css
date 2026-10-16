@@ -86,3 +86,20 @@
  @media(max-width:680px){.quick-toggle{margin-left:0;font-size:11px}.entry-redesign .table-toolbar{gap:12px}}
  @media(prefers-reduced-motion:reduce){.quick-track,.quick-track:after{transition:none}}
 }
+/* Q6: explicit descendant colors override legacy .table-toolbar span. */
+@media screen{
+ .entry-redesign .table-toolbar,
+ .entry-redesign .table-toolbar b,
+ .entry-redesign .table-toolbar>span,
+ .entry-redesign .table-toolbar .quick-toggle,
+ .entry-redesign .table-toolbar .quick-toggle>span{color:#fff!important}
+ .entry-redesign .table-toolbar>span{font-weight:500}
+ .entry-redesign .table-toolbar .quick-toggle input:disabled~span{opacity:1;color:#e5efff!important}
+ .entry-redesign .table-toolbar .quick-toggle input:disabled+.quick-track{opacity:.65}
+}
+@media print{
+ body.printing-record #printRoot .print-table{width:100%;table-layout:fixed;border-collapse:collapse}
+ body.printing-record #printRoot .print-table th,
+ body.printing-record #printRoot .print-table td{border:1px solid #222;color:#000;background:#fff;overflow-wrap:anywhere}
+ body.printing-record #printRoot .print-table .print-words{text-align:left;font-size:8pt;line-height:1.2;padding:1mm 2mm}
+}
