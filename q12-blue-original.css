@@ -1,0 +1,123 @@
+/* HTB Q12 | Khôi phục bảng màu xanh nguyên bản Q7/Q8 từ Q11.
+ * Chỉ thay đổi cách hiển thị; giữ nguyên dữ liệu, ma trận, API, phân quyền và các handler JS.
+ */
+@media screen {
+  :root {
+    --q7-navy:#082e66;
+    --q7-deep:#051d40;
+    --q7-primary:#0755ac;
+    --q7-primary-2:#084995;
+    --q7-ink:#173657;
+    --q7-muted:#4d6682;
+    --q7-line:#c8d9ed;
+    --q7-bg:#eef3fa;
+    --q7-soft:#f2f7fd;
+    --htb-soft-ink:#173657;
+    --htb-soft-line:#c8d9ed;
+    --htb-soft-accent:#0755ac;
+    --htb-soft-bg:#eef3fa;
+    --teal:#0755ac;
+    --teal-light:#dceaff;
+  }
+  html,body { background:#eef3fa!important; color:#173657!important; }
+  .page { background:#eef3fa!important; }
+  .sidebar {
+    background:linear-gradient(160deg,#082d61 0%,#051b3c 100%)!important;
+    border-right:0!important;
+    box-shadow:4px 0 22px #0316322e!important;
+  }
+  .sidebar .brand strong { color:#fff!important; }
+  .sidebar .brand small { color:#9bcaff!important; }
+  .sidebar .nav-label { color:#88baf0!important; }
+  .sidebar .nav button:not(.active) { color:#d2e4f7!important; }
+  .sidebar .nav button:not(.active) svg { color:#b1d4fb!important; }
+  .sidebar .nav button:not(.active):hover { background:#ffffff1a!important; color:#fff!important; }
+  .sidebar .nav button.active {
+    background:linear-gradient(90deg,#fff 0%,#edf6ff 100%)!important;
+    border-color:#d6e7fc!important;
+    color:#082e66!important;
+    box-shadow:0 4px 14px #031b3b55!important;
+  }
+  .sidebar .nav button.active svg { color:#0755ac!important; }
+  .sidebar .nav button.active:before { background:#39c4ff!important; }
+  .sidebar .side-bottom,.sidebar .copyright { color:#9fc1e9!important; }
+  .page-head { border-left:4px solid #2879d6!important; padding-left:14px!important; }
+  .page-head h1 { color:#082e66!important; }
+  .page-head p { color:#4d6682!important; }
+  .page-icon { background:#dbeafe!important; color:#0755ac!important; border-color:#bcd6f5!important; }
+  .page-head .head-actions button { color:#fff!important; background:#0755ac!important; border-color:#0755ac!important; }
+  .context { border-color:#c8d9ed!important; border-top:3px solid #3e82d2!important; }
+  .context .field select { color:#103c76!important; border-color:#b7cbe2!important; background:#f8fbff!important; }
+  .context .field label { color:#31567f!important; }
+  #content .card { border-color:#c8d9ed!important; box-shadow:0 5px 20px #1b466b0c!important; }
+  #content .card-title { background:linear-gradient(100deg,#eaf3ff,#f8fbff)!important; border-bottom-color:#d2e2f3!important; }
+  #content .card-title h3 { color:#082e66!important; }
+  #content .stat { border-top-color:#0755ac!important; }
+  #content .stat b { color:#082e66!important; }
+  #content .data-table thead th { background:#084995!important; color:#fff!important; }
+  #content .data-table tbody tr:nth-child(even) { background:#f2f7ff!important; }
+  #content .data-table tbody tr:hover { background:#e7f2ff!important; }
+  button.primary,.toolbar button.primary,.actionbar .actions button.primary {
+    background:#0755ac!important; border-color:#0755ac!important; color:#fff!important;
+    box-shadow:0 3px 9px #0755ac24!important;
+  }
+  button.primary:hover:not(:disabled),.toolbar button.primary:hover:not(:disabled),.actionbar .actions button.primary:hover:not(:disabled) {
+    background:#064489!important; border-color:#064489!important;
+  }
+  /* Phiếu nhập điểm: phục hồi các mảng xanh đặc trưng bản đầu. */
+  #content .entry-redesign .paper-head { background:linear-gradient(125deg,#f8fbff,#eaf3ff)!important; border-bottom-color:#c5d6eb!important; }
+  #content .entry-redesign .paper-title h2 { color:#082e66!important; }
+  #content .entry-redesign .table-toolbar { background:#0755ac!important; border-color:#054685!important; color:#fff!important; }
+  #content .entry-redesign .table-toolbar b,
+  #content .entry-redesign .table-toolbar>span,
+  #content .entry-redesign .quick-toggle,
+  #content .entry-redesign .quick-toggle>span:not(.quick-track) { color:#fff!important; }
+  #content .entry-redesign .scores th { background:#084995!important; color:#fff!important; border-color:#255e9e!important; }
+  #content .entry-redesign .scores tbody tr:nth-child(even) { background:#edf5ff!important; }
+  #content .entry-redesign .scores tbody tr:focus-within { background:#e4f1ff!important; outline-color:#69a8e8!important; }
+  #content .entry-redesign .scores input.score { color:#144f96!important; border-color:#b7ccec!important; background:#f6faff!important; }
+  #content .entry-redesign .score-footer { background:#f1f7ff!important; border-color:#cbdcf0!important; }
+  #content .entry-redesign .progress-fill { background:linear-gradient(90deg,#0755ac,#16a6d9)!important; }
+  #content .entry-redesign .counter { color:#0755ac!important; }
+  #content .entry-redesign .progress-next { background:#edf5ff!important; color:#184e83!important; }
+  #content .entry-redesign .scores td.paper-number.entry-next { background:#e3f0ff!important; color:#0755ac!important; outline-color:#8cbbeb!important; }
+  /* HQGD: giữ ba tab Q10; phục hồi nhấn xanh ở tab, báo cáo và lọc dữ liệu. */
+  #content .hq-subnav { border-color:#c8d9ed!important; }
+  #content .hq-subnav h2,#content .hq-panel-heading h3 { color:#082e66!important; }
+  #content .hq-tab-btn.active { color:#0755ac!important; background:#eaf3ff!important; border-color:#cadff6!important; border-bottom-color:#0755ac!important; }
+  #content .hq-tab-btn:hover:not(.active) { background:#f1f7ff!important; color:#0755ac!important; }
+  #content .hq-mode-select { background:#eaf3ff!important; border-color:#c8d9ed!important; }
+  #content .hq-mode-select button.hq-mode-active { color:#0755ac!important; border-color:#b7cfee!important; }
+  #content .hq-source-panel { background:#f2f7ff!important; border-color:#d0e1f4!important; }
+  #content .hq-report-toolbar button,#content #hq-system,#content #hq-manual-tools button {
+    background:#0755ac!important; border-color:#0755ac!important; color:#fff!important;
+  }
+  #content .hq-report-toolbar #hq-history-refresh,#content .hq-report-toolbar #hq-report-print {
+    background:#fff!important; color:#0755ac!important; border-color:#c2d6f0!important;
+  }
+  #content .hq-workflow-stats strong { color:#082e66!important; }
+  /* Ma trận đợt kiểm tra Q11: chức năng cũ, chỉ tô lại theo tông xanh nguyên bản. */
+  .ps-hero,.ps-card,.ps-summary>div { border-color:#c8d9ed; }
+  .ps-hero-icon { background:#eaf3ff; color:#0755ac; border-color:#c9dff5; }
+  .ps-kicker,.ps-section-kicker { color:#0755ac; }
+  .ps-hero h2,.ps-card-header h3 { color:#082e66; }
+  .ps-year-chip { background:#eaf3ff; color:#0755ac; border-color:#cbdff4; }
+  .ps-summary strong { color:#082e66; }
+  .ps-summary>div:nth-child(2) strong { color:#0755ac; }
+  .ps-card-header { background:linear-gradient(95deg,#eef5ff,#fff); border-bottom-color:#d5e3f4; }
+  .ps-toolbar { background:#f2f7ff; border-color:#dce8f7; }
+  .ps-toolbar-label b { color:#082e66; }
+  .ps-ghost,.ps-quick-actions button,.ps-tool-buttons button { color:#0755ac; border-color:#c8d9ed; }
+  .ps-ghost:hover,.ps-quick-actions button:hover,.ps-tool-buttons button:hover { background:#eaf3ff; border-color:#95bbeb; }
+  .ps-period { border-color:#cfdded; }
+  .ps-period:hover { background:#f3f8ff; border-color:#9cc2ef; }
+  .ps-period.is-enabled { background:#ebf5ff; border-color:#8ab7eb; box-shadow:inset 0 0 0 1px #d5e7fa; }
+  .ps-period:focus-within { outline-color:#0755ac; }
+  .ps-period.is-enabled .ps-checkmark { background:#0755ac; border-color:#0755ac; }
+  .ps-period-text strong { color:#173e70; }
+  .ps-save { background:#0755ac; border-color:#0755ac; box-shadow:0 3px 9px #0755ac20; }
+  .ps-save:hover:not(:disabled) { background:#064489; border-color:#064489; }
+  .ps-save:disabled { background:#d6e1e9; border-color:#d6e1e9; box-shadow:none; }
+  .ps-notice { background:#eef5ff; border-color:#d2e2f5; color:#3c6087; }
+  .ps-notice svg { color:#0755ac; }
+}
