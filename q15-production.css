@@ -1,0 +1,10 @@
+/* Q15 production polish: preserve original blue theme */
+:root{--htb-primary:#0755ac}
+.htb-list-loading{font-size:13px;background:#eaf3ff;border:1px solid #bed7f4;border-radius:10px;padding:10px 14px;margin-bottom:12px;color:#174775}
+button,[role=button]{touch-action:manipulation}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #4ba2f8!important;outline-offset:2px}
+#content .score-wrap th,#content .score-wrap td,#content .score-wrap input{text-align:center}
+#content .score-wrap td{vertical-align:middle}
+@media(min-width:768px){.page-head{min-height:40px}.page-head h1{letter-spacing:-.25px}}
+@media(max-width:760px){.page-head h1{font-size:1.13rem}.modal-actions button{min-height:44px}}
+@media print{#content .score-wrap th,#content .score-wrap td{text-align:center!important}}

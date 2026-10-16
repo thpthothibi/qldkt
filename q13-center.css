@@ -1,0 +1,19 @@
+/* Q13 – Center the five entry and print columns without changing saved values. */
+.entry-layout .scores{table-layout:fixed;width:100%}
+.entry-layout .scores th,.entry-layout .scores td{text-align:center!important;vertical-align:middle!important}
+.entry-layout .scores td .score,.entry-layout .scores td .note{display:block;margin-left:auto!important;margin-right:auto!important;text-align:center!important}
+.entry-layout .scores .score-words,.entry-layout .scores .paper-number{text-align:center!important}
+.entry-layout .scores td:nth-child(1){width:8%}
+.entry-layout .scores td:nth-child(2){width:14%}
+.entry-layout .scores td:nth-child(3){width:15%}
+.entry-layout .scores td:nth-child(4){width:25%}
+.entry-layout .scores td:nth-child(5){width:38%}
+.entry-layout .scores td .note{width:100%;max-width:100%}
+.entry-layout .score-footer{text-align:center;justify-content:center;gap:18px;flex-wrap:wrap}
+@media(max-width:680px){.entry-layout .scores{min-width:630px}.entry-layout .score-wrap{overflow-x:auto}.entry-layout .scores td:nth-child(1){width:48px}.entry-layout .scores td:nth-child(2){width:77px}.entry-layout .scores td:nth-child(3){width:95px}.entry-layout .scores td:nth-child(4){width:142px}.entry-layout .scores td:nth-child(5){width:210px}}
+@media print{
+ #printRoot .print-table th,#printRoot .print-table td{ text-align:center!important; vertical-align:middle!important; }
+ #printRoot .print-table .print-words,#printRoot .print-table .print-note{ text-align:center!important; }
+ #printRoot .print-table .print-note{ margin-left:auto;margin-right:auto; }
+ .entry-layout .scores th,.entry-layout .scores td{text-align:center!important}
+}

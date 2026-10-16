@@ -1,0 +1,13 @@
+/* Q14 fast: lightweight unified interaction polish; keep Q13 theme */
+:root{--htb-primary:#0755ac;--htb-focus:#0b69c8}
+button,select,input{touch-action:manipulation}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #6cb8ff!important;outline-offset:2px}
+button:disabled{cursor:wait;opacity:.64}
+button.primary,.modal-actions .primary{background:#0755ac!important;color:white!important}
+.nav button{min-height:42px}
+.page-head{margin-bottom:12px}
+.score-wrap table.scores th,.score-wrap table.scores td{text-align:center;vertical-align:middle}
+.score-wrap table.scores input{text-align:center}
+.score-wrap table.scores input.note{text-align:center}
+@media(max-width:760px){.page{padding:12px}.page-head h1{font-size:1.15rem}.score-wrap{overflow-x:auto;overscroll-behavior-x:contain}.score-wrap table.scores{min-width:570px}.modal-actions button{min-height:44px}}
+@media print{.score-wrap table.scores th,.score-wrap table.scores td,.score-wrap table.scores input{text-align:center!important}}
