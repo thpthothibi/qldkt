@@ -1,4 +1,4 @@
-const CACHE='htb-public-v10-rc1-q2-20261015';
+const CACHE='htb-public-v10-rc1-q3-20261015';
 const PUBLIC=new Set(['app.js','hqgd.js','hqgd-engine.js','hqgd-dispatch.js','hqgd-inbox.js','hqgd.css','bridge.js','style.css','clean.css','ui.css','school-logo.png','appwrite-17.js','xlsx.full.min.js','manifest.webmanifest','favicon.png','favicon.ico','offline.html']);
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.add(new URL('offline.html',self.registration.scope))).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>/^htb-(public-|offline-|full-|release-)/.test(k)&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
