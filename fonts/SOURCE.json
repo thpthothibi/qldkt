@@ -1,0 +1,47 @@
+{
+  "family": "Be Vietnam Pro",
+  "weights": [
+    400,
+    500,
+    600
+  ],
+  "source": "https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap",
+  "files": [
+    {
+      "file": "QdVPSTAyLFyeg_IDWvOJmVES_Hw4BXoKZA.woff2",
+      "bytes": 11532
+    },
+    {
+      "file": "QdVPSTAyLFyeg_IDWvOJmVES_Hw5BXoKZA.woff2",
+      "bytes": 13056
+    },
+    {
+      "file": "QdVPSTAyLFyeg_IDWvOJmVES_Hw3BXo.woff2",
+      "bytes": 21168
+    },
+    {
+      "file": "QdVMSTAyLFyeg_IDWvOJmVES_HTEJm86Rb0bcw.woff2",
+      "bytes": 12172
+    },
+    {
+      "file": "QdVMSTAyLFyeg_IDWvOJmVES_HTEJm87Rb0bcw.woff2",
+      "bytes": 13548
+    },
+    {
+      "file": "QdVMSTAyLFyeg_IDWvOJmVES_HTEJm81Rb0.woff2",
+      "bytes": 21892
+    },
+    {
+      "file": "QdVMSTAyLFyeg_IDWvOJmVES_HToIW86Rb0bcw.woff2",
+      "bytes": 12176
+    },
+    {
+      "file": "QdVMSTAyLFyeg_IDWvOJmVES_HToIW87Rb0bcw.woff2",
+      "bytes": 13608
+    },
+    {
+      "file": "QdVMSTAyLFyeg_IDWvOJmVES_HToIW81Rb0.woff2",
+      "bytes": 22032
+    }
+  ]
+}
