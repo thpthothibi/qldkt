@@ -1,7 +1,7 @@
 /* Q20 Voice Entry — optional UI enhancement, never writes directly to API. */
 (()=>{'use strict';
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-const state={recognition:null,reading:false,index:0,active:false,paused:false,token:0};
+const state={recognition:null,reading:false,index:0,active:false,paused:false,token:0,listening:false,listenTimer:null,listenSession:0};
 const $=s=>document.querySelector(s);
 const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[.,;:]/g,' ').replace(/\s+/g,' ').trim();
 const words={khong:0,mot:1,hai:2,ba:3,bon:4,tu:4,nam:5,lam:5,sau:6,bay:7,tam:8,chin:9,muoi:10};
@@ -85,7 +85,7 @@ function scoreClips(row,value){
  if(!f)return [...files,'integer-'+Number(whole)];
  return [...files,'whole-'+Number(whole),'fraction-'+f];
 }
-async function playClips(files,then){
+async function playClips(files,then,onFailure){
  stopPlayback();state.active=true;const generation=audioGeneration;
  try{
   const Context=window.AudioContext||window.webkitAudioContext;
@@ -109,10 +109,11 @@ async function playClips(files,then){
   if(generation!==audioGeneration)return;
   state.reading=false;state.paused=false;state.active=false;state.token++;
   status('Chưa phát được âm thanh. Kiểm tra đã chép thư mục audio lên web rồi bấm Dò điểm hoặc Nghe mẫu lại.');
+  onFailure?.();
  }
 }
-function speakScore(row,value,then){
- if(config().recorded)return playClips(scoreClips(row,value),then);
+function speakScore(row,value,then,onFailure){
+ if(config().recorded)return playClips(scoreClips(row,value),then,onFailure);
  say(scorePhrase(row,value),then);
 }
 function say(txt,then){
@@ -131,21 +132,64 @@ function current(){return inputs().findIndex(e=>!e.value.trim())+1;}
 function inputScore(row,value){
  const el=inputs()[row-1];if(!el||el.disabled)return status('Phiếu đang khóa hoặc không thể sửa.');
  el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('blur',{bubbles:true}));
- el.focus();status(`Đã điền bài ${row}: ${value}. Kiểm tra trước khi lưu.`);if($('#q20-echo')?.checked)speakScore(row,value);
+ el.focus();status(`Đã điền bài ${row}: ${value}. Kiểm tra trước khi lưu.`);if(!state.listening&&$('#q20-echo')?.checked)speakScore(row,value);
+ return {row,value};
 }
 function consume(s){
  const p=parseLine(s,current());if(p.error){status(`${p.error} Nhận được: “${s}”`);return;}
- inputScore(p.row,p.value);
+ return inputScore(p.row,p.value);
 }
-function stopVoice(){state.recognition?.stop();state.recognition=null;const b=$('#q20-mic');if(b)b.textContent='🎙️ Bắt đầu đọc điểm';}
+function stopVoice(){
+ state.listening=false;state.listenSession++;
+ if(state.listenTimer!==null){window.clearTimeout(state.listenTimer);state.listenTimer=null;}
+ const r=state.recognition;state.recognition=null;
+ if(r){r.onresult=null;r.onend=null;r.onerror=null;try{r.abort();}catch(_){try{r.stop();}catch(_){}}}
+ stopPlayback();
+ const b=$('#q20-mic');if(b){b.textContent='🎙️ Đọc điểm liên tục';b.setAttribute('aria-pressed','false');}
+}
+function queueListen(session,delay=350){
+ if(!state.listening||session!==state.listenSession)return;
+ if(state.listenTimer!==null)window.clearTimeout(state.listenTimer);
+ state.listenTimer=window.setTimeout(()=>{state.listenTimer=null;beginListen(session);},delay);
+}
+function beginListen(session){
+ if(!state.listening||session!==state.listenSession||state.recognition)return;
+ if(!inputs().some(el=>!el.disabled)){stopVoice();status('Phiếu đang khóa hoặc không thể sửa.');return;}
+ const r=new SR();state.recognition=r;r.lang='vi-VN';
+ // Restart after each final phrase; pause the microphone while echo is playing.
+ r.continuous=false;r.interimResults=false;r.maxAlternatives=1;
+ let accepted=null,handled=false;
+ const valid=()=>state.listening&&session===state.listenSession&&state.recognition===r;
+ r.onresult=e=>{
+  if(!valid()||handled)return;
+  const result=e.results?.[e.resultIndex??0];
+  if(result?.isFinal===false)return;
+  const text=result?.[0]?.transcript;if(!text)return;
+  handled=true;accepted=consume(text)||null;
+ };
+ r.onerror=e=>{
+  if(!valid())return;
+  if(e.error==='no-speech')return;
+  stopVoice();status(`Micro đã dừng (${e.error}). Kiểm tra quyền micro hoặc kết nối rồi bấm Đọc điểm liên tục lại.`);
+ };
+ r.onend=()=>{
+  if(!valid())return;
+  state.recognition=null;
+  const resume=()=>queueListen(session,350);
+  if(accepted&&$('#q20-echo')?.checked){
+   status(`Đã điền bài ${accepted.row}: ${accepted.value}. Đang đọc lại; chờ máy đọc xong để đọc bài tiếp.`);
+   speakScore(accepted.row,accepted.value,resume,resume);
+  }else queueListen(session,handled?350:800);
+ };
+ try{r.start();status('🎙️ Đang nghe liên tục. Đọc từng bài, ví dụ “Bài 1 điểm bảy phẩy năm”.');}
+ catch(_){stopVoice();status('Không mở được micro. Kiểm tra quyền micro rồi thử lại.');}
+}
 function listen(){
+ if(state.listening){stopVoice();status('Đã dừng micro.');return;}
  if(!SR){status('Trình duyệt này chưa hỗ trợ nhận dạng giọng nói. Có thể dùng Chrome máy tính hoặc nhập tay.');return;}
- if(state.recognition){stopVoice();return;}
- const r=new SR();state.recognition=r;r.lang='vi-VN';r.continuous=false;r.interimResults=false;r.maxAlternatives=1;
- r.onresult=e=>{const t=e.results?.[0]?.[0]?.transcript;if(t)consume(t);};
- r.onerror=e=>status(`Không nhận giọng nói (${e.error}). Vui lòng thử lại hoặc nhập tay.`);
- r.onend=()=>{if(state.recognition===r)state.recognition=null;const b=$('#q20-mic');if(b)b.textContent='🎙️ Bắt đầu đọc điểm';};
- r.start();$('#q20-mic').textContent='■ Dừng micro';status('Đang nghe và tự điền điểm. Ví dụ: “Bài 5 điểm bảy phẩy năm”.');
+ stopRead(true);state.listening=true;const session=++state.listenSession;
+ const b=$('#q20-mic');if(b){b.textContent='■ Dừng micro';b.setAttribute('aria-pressed','true');}
+ beginListen(session);
 }
 function stopRead(quiet=false){
  state.reading=false;state.paused=false;state.token++;
@@ -190,22 +234,24 @@ function move(delta){
 function mount(){
  if(!$('.scores input.score')||$('#q20-panel'))return;
  const toolbar=$('.table-toolbar');if(!toolbar)return;
+ if(state.listening||state.recognition)stopVoice();
+ if(state.reading||state.active)stopRead(true);
  const locked=!inputs().some(e=>!e.disabled);
  const node=document.createElement('section');node.id='q20-panel';node.className='q20-panel screen-only';
  node.innerHTML=`<div class="q20-title"><strong>🎙️ Nhập & dò điểm</strong><span>Không tự lưu</span></div>
- <div class="q20-controls"><button type="button" class="q20-btn" id="q20-mic" ${locked?'disabled':''}>🎙️ Bắt đầu đọc điểm</button><label><input type="checkbox" id="q20-echo" checked> Đọc lại</label><label>Từ bài <input id="q20-from" type="number" min="1" max="50" value="1" aria-label="Bắt đầu đọc dò từ bài"></label><button class="q20-btn" type="button" id="q20-read">🔊 Dò điểm</button><button class="q20-btn" type="button" id="q21-prev" aria-label="Bài trước">◀ Trước</button><button class="q20-btn" type="button" id="q21-pause">⏸ Tạm dừng</button><button class="q20-btn" type="button" id="q21-next" aria-label="Bài tiếp">Tiếp ▶</button><button class="q20-btn" type="button" id="q20-stop">■ Dừng</button></div>
+ <div class="q20-controls"><button type="button" class="q20-btn" id="q20-mic" ${locked?'disabled':''} aria-pressed="false">🎙️ Đọc điểm liên tục</button><label><input type="checkbox" id="q20-echo" checked> Đọc lại</label><label>Từ bài <input id="q20-from" type="number" min="1" max="50" value="1" aria-label="Bắt đầu đọc dò từ bài"></label><button class="q20-btn" type="button" id="q20-read">🔊 Dò điểm</button><button class="q20-btn" type="button" id="q21-prev" aria-label="Bài trước">◀ Trước</button><button class="q20-btn" type="button" id="q21-pause">⏸ Tạm dừng</button><button class="q20-btn" type="button" id="q21-next" aria-label="Bài tiếp">Tiếp ▶</button><button class="q20-btn" type="button" id="q20-stop">■ Dừng</button></div>
  <div class="q21-settings"><label>Giọng <select id="q21-voice" aria-label="Giọng đọc tiếng Việt"><option value="recorded" selected>Tiếng Việt rõ chữ – có sẵn</option></select></label><label>Tốc độ <select id="q21-rate"><option value="0.8">Chậm</option><option value="1" selected>Bình thường</option><option value="1.1">Nhanh</option></select></label><label>Nghỉ <select id="q21-gap"><option value="800">0,8 giây</option><option value="1200" selected>1,2 giây</option><option value="1600">1,6 giây</option><option value="2000">2 giây</option></select></label><button type="button" class="q20-btn" id="q21-preview">🔊 Nghe mẫu</button></div>
  <p id="q21-voice-note" class="q21-note"></p><p id="q20-status" role="status"></p>`;
  toolbar.insertAdjacentElement('afterend',node);
  $('#q20-mic').onclick=listen;$('#q20-read').onclick=startRead;$('#q20-stop').onclick=()=>{stopVoice();stopRead();};
  $('#q21-pause').onclick=togglePause;
  $('#q21-prev').onclick=()=>move(-1);$('#q21-next').onclick=()=>move(1);
- $('#q21-preview').onclick=()=>{stopRead(true);status('Đang phát mẫu giọng đọc…');if(config().recorded)playClips(['sample'],()=>status('Đã phát xong mẫu.'));else say(scorePhrase(1,'7,5')+'. '+scorePhrase(2,'8')+'.');};
+ $('#q21-preview').onclick=()=>{stopVoice();stopRead(true);status('Đang phát mẫu giọng đọc…');if(config().recorded)playClips(['sample'],()=>status('Đã phát xong mẫu.'));else say(scorePhrase(1,'7,5')+'. '+scorePhrase(2,'8')+'.');};
  voiceList();
  if(window.speechSynthesis)window.speechSynthesis.addEventListener?.('voiceschanged',voiceList);
 
 }
-const obs=new MutationObserver(()=>{if(!$('.scores')){if(state.recognition)stopVoice();if(state.reading||state.active||audioSource)stopRead();}else mount();});
+const obs=new MutationObserver(()=>{if(!$('.scores')){if(state.listening||state.recognition)stopVoice();if(state.reading||state.active||audioSource)stopRead();}else mount();});
 function init(){obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});mount();}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
