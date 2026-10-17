@@ -22,7 +22,7 @@ function parseLine(raw,defaultRow){
  const m=s.match(/^(?:bai|stt|so|dong)\s+(.+?)\s+(?:diem|la|duoc)\s+(.+)$/);
  if(m){row=num(m[1]);point=m[2];}
  else{const t=s.match(/^(?:diem|duoc|la)\s+(.+)$/);if(t)point=t[1];}
- if(!Number.isInteger(row)||row<1||row>50)return {error:'Không xác định được STT bài từ 1 đến 50.'};
+ if(!Number.isInteger(row)||row<1||row>50)return {error:'Hãy đọc rõ STT bài từ 1 đến 50, ví dụ “Bài 12 điểm tám phẩy năm”.'};
  const value=parseScore(point);
  return value===null?{error:'Không nhận rõ điểm. Hãy đọc “bài 12 điểm tám phẩy năm”.'}:{row,value};
 }
@@ -127,16 +127,14 @@ function say(txt,then){
 }
 function status(s){const e=$('#q20-status');if(e)e.textContent=s;}
 function inputs(){return [...document.querySelectorAll('.scores input.score')];}
-function current(){return inputs().findIndex(e=>!e.value.trim())+1||50;}
+function current(){return inputs().findIndex(e=>!e.value.trim())+1;}
 function inputScore(row,value){
  const el=inputs()[row-1];if(!el||el.disabled)return status('Phiếu đang khóa hoặc không thể sửa.');
- if(el.value.trim()&&el.value.trim()!==value&&!window.confirm(`Bài ${row} đã có điểm ${el.value}. Thay thành ${value}?`))return;
  el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('blur',{bubbles:true}));
  el.focus();status(`Đã điền bài ${row}: ${value}. Kiểm tra trước khi lưu.`);if($('#q20-echo')?.checked)speakScore(row,value);
 }
 function consume(s){
  const p=parseLine(s,current());if(p.error){status(`${p.error} Nhận được: “${s}”`);return;}
- if(!window.confirm(`Giọng nói nhận được: “${s}”.\nNhập bài ${p.row}: ${p.value}?`)){status('Đã bỏ lượt nhận dạng, không thay đổi điểm.');return;}
  inputScore(p.row,p.value);
 }
 function stopVoice(){state.recognition?.stop();state.recognition=null;const b=$('#q20-mic');if(b)b.textContent='🎙️ Bắt đầu đọc điểm';}
@@ -147,7 +145,7 @@ function listen(){
  r.onresult=e=>{const t=e.results?.[0]?.[0]?.transcript;if(t)consume(t);};
  r.onerror=e=>status(`Không nhận giọng nói (${e.error}). Vui lòng thử lại hoặc nhập tay.`);
  r.onend=()=>{if(state.recognition===r)state.recognition=null;const b=$('#q20-mic');if(b)b.textContent='🎙️ Bắt đầu đọc điểm';};
- r.start();$('#q20-mic').textContent='■ Dừng micro';status('Đang nghe một điểm. Ví dụ: “Bài 5 điểm bảy phẩy năm”.');
+ r.start();$('#q20-mic').textContent='■ Dừng micro';status('Đang nghe và tự điền điểm. Ví dụ: “Bài 5 điểm bảy phẩy năm”.');
 }
 function stopRead(quiet=false){
  state.reading=false;state.paused=false;state.token++;
