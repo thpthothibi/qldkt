@@ -111,3 +111,23 @@
 #q20-panel .q21-note,#q20-panel #q20-status{font-size:11px;margin:5px 0 0;line-height:1.4;color:#546f8b}
 #q20-panel .q21-note:empty,#q20-panel #q20-status:empty{display:none}
 @media(max-width:640px){#q20-panel .q21-settings>label:first-child{flex:1 1 100%;min-width:0}#q20-panel #q21-voice{flex:1;width:0}#q20-panel .q20-controls{gap:6px}#q20-panel .q20-btn{min-height:36px!important;height:36px!important}}
+
+/* Q33.2: compact navigation stays reachable at normal browser zoom. */
+@media screen {
+ html body .sidebar {height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:contain;scrollbar-width:thin;scrollbar-color:#83a9da transparent;padding:16px 12px!important;box-sizing:border-box;}
+ html body .sidebar>.brand,html body .sidebar>.nav-label,html body .sidebar>.nav,html body .sidebar>.side-bottom {flex-shrink:0;}
+ html body .sidebar .brand {padding:0 8px 14px!important;}
+ html body .sidebar .nav-label {margin:16px 12px 6px!important;line-height:1.4!important;}
+ html body .sidebar .nav button {min-height:40px!important;padding:8px 12px!important;margin:2px 0!important;line-height:1.4!important;}
+ html body .sidebar .side-bottom {padding:12px 8px 0!important;margin-top:auto;}
+ html body .sidebar .copyright {margin-top:0!important;font-size:9px!important;line-height:1.5!important;}
+ html body .sidebar::-webkit-scrollbar {width:6px;}
+ html body .sidebar::-webkit-scrollbar-thumb {background:#83a9da;border-radius:6px;}
+}
+@media screen and (max-height:760px) {
+ html body .sidebar {padding:10px 10px!important;}
+ html body .sidebar .brand {padding-bottom:10px!important;}
+ html body .sidebar .nav-label {margin:10px 10px 4px!important;}
+ html body .sidebar .nav button {min-height:36px!important;padding:6px 10px!important;margin:1px 0!important;}
+ html body .sidebar .side-bottom {padding-top:8px!important;}
+}
