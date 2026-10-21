@@ -12,11 +12,11 @@
   const clearJwt = () => {authGeneration++; cachedJwt=null; jwtAt=0; pendingJwt=null;};
   async function jwt() {
     if(cachedJwt && Date.now() - jwtAt < 5*60*1000) return cachedJwt;
-    if(!pendingJwt) { const generation=authGeneration; pendingJwt = account.createJWT().then(result => {
+    if(!pendingJwt) { const generation=authGeneration; let jwtTimer; const jwtDeadline=new Promise((_,reject)=>{jwtTimer=setTimeout(()=>reject(Error('Không lấy được phiên đăng nhập trong 12 giây. Vui lòng thử lại.')),12000);});pendingJwt = Promise.race([account.createJWT(),jwtDeadline]).then(result => {
       if(generation!==authGeneration)throw Error("Phiên đăng nhập đã thay đổi. Vui lòng thử lại.");
       if (!result.jwt) throw Error('Appwrite không tạo được JWT.');
       cachedJwt = result.jwt; jwtAt = Date.now(); return cachedJwt;
-    }).finally(()=>{if(generation===authGeneration)pendingJwt=null;}); }
+    }).finally(()=>{clearTimeout(jwtTimer);if(generation===authGeneration)pendingJwt=null;}); }
     return pendingJwt;
   }
   window.HTBAuth = Object.freeze({
@@ -58,16 +58,18 @@
       clearJwt();
     }
   });
-  const readActions = new Set(['getProfileSignature','saveProfileSignature','bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','roomChoices','listPage','recordBatch','saveRecord','reopen','import','addConfig','periodMatrix','savePeriodMatrix','resetPassword','setActive','setSubject','hqgdSaveMatrix','hqgdSetDepartment','hqgdSetRole','hqgdDirectory','hqgdDispatch','hqgdInbox','hqgdRevoke','hqgdTemplateList','hqgdClassAverages','hqgdAssignments','hqgdSaveAssignments','hqgdTeacherDirectory','hqgdReportSave','hqgdReportList','hqgdReportGet']);
-  window.HTBRemote = async (action,payload={}) => {
+  const readActions = new Set(['getProfileSignature','saveProfileSignature','bootstrap','list','loadRecord','users','audit','pilotStatus','pilot50SaveRecord','pilotCreateMapping','teacherImportStatus','importTeacher','passwordReady','changePassword','roomChoices','listPage','phachAuditPage','phachAuditCheck','phachVerifyBatch','reportPage','recordBatch','saveRecord','reopen','import','addConfig','periodMatrix','savePeriodMatrix','resetPassword','setActive','setSubject','hqgdSaveMatrix','hqgdSetDepartment','hqgdSetRole','hqgdDirectory','hqgdDispatch','hqgdInbox','hqgdRevoke','hqgdTemplateList','hqgdClassAverages','hqgdAssignments','hqgdSaveAssignments','hqgdTeacherDirectory','hqgdReportSave','hqgdReportList','hqgdReportGet']);
+  window.HTBRemote = async (action,payload={},options={}) => {
     if(!readActions.has(action))throw Error('Thao tác API không được hỗ trợ. Hãy tải lại trang hoặc kiểm tra phiên bản web.');
     if(action==='pilot50SaveRecord' && (config.enablePilotUI!==true || !Array.isArray(payload?.rows) || payload.rows.length!==50)) throw Error('Phiếu thử không hợp lệ.');
     if(action==='pilotCreateMapping' && config.enablePilotUI!==true)throw Error('Chưa bật giao diện Pilot.');
     if(typeof action !== 'string' || !action || !payload || typeof payload !== 'object' || Array.isArray(payload)) throw Error('Yêu cầu không hợp lệ.');
-    const token = await jwt();
-    const controller = new AbortController();
-    const timer = setTimeout(()=>controller.abort(),action==='hqgdSaveMatrix'?120000:30000);
+    const controller = new AbortController(),externalAbort=()=>controller.abort();
+    if(options.signal?.aborted)controller.abort();else options.signal?.addEventListener('abort',externalAbort,{once:true});
+    const timer = setTimeout(()=>controller.abort(),action==='reportPage'?20000:action==='hqgdSaveMatrix'?120000:30000);
+    const abortable=promise=>new Promise((resolve,reject)=>{const abort=()=>reject(Object.assign(Error('Aborted'),{name:'AbortError'}));if(controller.signal.aborted){abort();return;}controller.signal.addEventListener('abort',abort,{once:true});Promise.resolve(promise).then(resolve,reject).finally(()=>controller.signal.removeEventListener('abort',abort));});
     try {
+      const token=await abortable(jwt());
       const res = await fetch(url.href,{method:'POST',mode:'cors',credentials:'omit',cache:'no-store',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
         body:JSON.stringify({action,payload}),signal:controller.signal});
@@ -76,10 +78,10 @@
       if(!res.ok || body.ok!==true){const e=Error(body.error || `Cloudflare HTTP ${res.status}`);e.status=res.status;throw e;}
       return body.data;
     } catch(e) {
-      if(e.name==='AbortError')throw Error('Hết thời gian chờ. Không gửi lại thao tác ghi trước khi kiểm tra trạng thái phiếu.');
+      if(e.name==='AbortError'){if(action==='reportPage'||options.signal?.aborted)throw Error(options.signal?.aborted?'Đã hủy tìm kiếm.':'Tải điểm quá 20 giây. Bấm Tìm kiếm để thử lại hoặc chọn một phòng.');throw Error('Hết thời gian chờ. Không gửi lại thao tác ghi trước khi kiểm tra trạng thái phiếu.');}
       if(e instanceof TypeError)throw Error('Không kết nối Cloudflare. Kiểm tra mạng, CORS và Worker.');
       throw e;
-    } finally {clearTimeout(timer);}
+    } finally {clearTimeout(timer);options.signal?.removeEventListener('abort',externalAbort);}
   };
   window.HTBHQGDTemplates=Object.freeze({
     async upload(file,{year,semester,expectedVersion}){

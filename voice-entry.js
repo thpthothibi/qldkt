@@ -3,21 +3,51 @@
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const state={recognition:null,reading:false,index:0,active:false,paused:false,token:0,listening:false,listenTimer:null,listenSession:0};
 const $=s=>document.querySelector(s);
-const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[.,;:]/g,' ').replace(/\s+/g,' ').trim();
+// Preserve decimal punctuation until the score itself has been parsed.
+const speechText=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/\s+/g,' ').trim();
+const norm=s=>speechText(s).replace(/[.,;:]/g,' ').replace(/\s+/g,' ').trim();
 const words={khong:0,mot:1,hai:2,ba:3,bon:4,tu:4,nam:5,lam:5,sau:6,bay:7,tam:8,chin:9,muoi:10};
-function num(v){v=norm(v).replace(/\bmuoi\s+(mot|hai|ba|bon|nam|sau|bay|tam|chin)\b/g,(_,a)=>'1'+words[a]);if(/^\d+$/.test(v))return Number(v);if(Object.prototype.hasOwnProperty.call(words,v))return words[v];const m=v.match(/^(\w+)\s+muoi(?:\s+(\w+))?$/);if(m&&words[m[1]]!==undefined)return words[m[1]]*10+(m[2]?(words[m[2]]??NaN):0);const t=v.match(/^muoi\s+(\w+)$/);if(t&&words[t[1]]!==undefined)return 10+words[t[1]];return NaN;}
+function num(v){
+ const text=norm(v);
+ if(/^\d+$/.test(text))return Number(text);
+ if(Object.prototype.hasOwnProperty.call(words,text))return words[text];
+ const teen=text.match(/^muoi (\w+)$/);
+ if(teen&&Object.prototype.hasOwnProperty.call(words,teen[1])&&words[teen[1]]<10)return 10+words[teen[1]];
+ const tens=text.match(/^(\w+) muoi(?: (\w+))?$/);
+ if(tens&&Object.prototype.hasOwnProperty.call(words,tens[1])&&words[tens[1]]>=2&&words[tens[1]]<=9){
+  const unit=tens[2]?words[tens[2]]:0;
+  if(Number.isInteger(unit)&&unit>=0&&unit<10)return words[tens[1]]*10+unit;
+ }
+ return NaN;
+}
 function parseScore(v){
- let s=norm(v).replace(/\b(phai|phay|phẩy|phải)\b/g,'phay').replace(/\b(ruoi|rưỡi)\b/g,'phay nam').replace(/\b(phay|cham)\b/g,' phay ').replace(/\s+/g,' ').trim();
- let n=s.match(/^(\d+)\s+(\d+)$/); if(n) s=n[1]+' phay '+n[2];
+ let s=speechText(v).replace(/[;:!?]+$/,'').replace(/\.$/,'').trim().replace(/\s+diem$/,'').trim();
+ // Work in integer hundredths: no binary floating-point equality or lost leading zero.
+ const fromParts=(whole,fraction='')=>{
+  if(!Number.isInteger(whole)||whole<0||whole>10||!/^\d{0,2}$/.test(fraction))return null;
+  const cents=whole*100+Number(fraction.padEnd(2,'0'));
+  return cents<=1000?String(cents/100).replace('.',','):null;
+ };
+ const numeric=s.match(/^(\d{1,2})(?:\s*[.,]\s*(\d{1,2}))?$/);
+ if(numeric)return fromParts(Number(numeric[1]),numeric[2]||'');
+ s=s.replace(/\b(phai|phay|cham)\b/g,' phay ').replace(/\bruoi\b/g,' phay nam').replace(/\s+/g,' ').trim();
  const parts=s.split(' phay ');if(parts.length>2)return null;
- const a=num(parts[0]);if(!Number.isFinite(a))return null;
- let result=a;
- if(parts.length===2){const p=parts[1].split(' ').map(x=>num(x));if(!p.length||p.some(x=>!Number.isInteger(x)||x<0||x>9))return null; result=a+Number('0.'+p.join(''));}
- if(result<0||result>10||Math.round(result*100)!==result*100)return null;
- return String(result).replace('.',',');
+ const whole=num(parts[0]);
+ if(parts.length===1)return fromParts(whole);
+ const tail=parts[1].trim();let fraction;
+ if(/^\d{1,2}$/.test(tail))fraction=tail;
+ else{
+  const tokens=tail.split(' ');
+  const digits=tokens.map(t=>/^\d$/.test(t)?t:Object.prototype.hasOwnProperty.call(words,t)&&words[t]<10?String(words[t]):null);
+  if(digits.every(t=>t!==null)&&digits.length<=2)fraction=digits.join('');
+  else if(/^(?:muoi(?: \w+)?|\w+ muoi(?: \w+)?)$/.test(tail)){
+   const n=num(tail);if(Number.isInteger(n)&&n>=10&&n<=99)fraction=String(n);
+  }
+ }
+ return fraction===undefined?null:fromParts(whole,fraction);
 }
 function parseLine(raw,defaultRow){
- const s=norm(raw).replace(/^sua\s+/, '').replace(/^diem\s+/, '');
+ const s=speechText(raw).replace(/^sua\s+/, '').replace(/^diem\s+/, '');
  let row=defaultRow,point=s;
  const m=s.match(/^(?:bai|stt|so|dong)\s+(.+?)\s+(?:diem|la|duoc)\s+(.+)$/);
  if(m){row=num(m[1]);point=m[2];}
