@@ -131,3 +131,7 @@
  html body .sidebar .nav button {min-height:36px!important;padding:6px 10px!important;margin:1px 0!important;}
  html body .sidebar .side-bottom {padding-top:8px!important;}
 }
+
+/* Q33.3: wrap export controls on narrow screens. */
+.export-actions{flex-wrap:wrap;justify-content:flex-end;margin-bottom:0}.export-actions button{white-space:normal}
+@media(max-width:760px){.card-title:has(.export-actions){flex-wrap:wrap;gap:10px}.export-actions{width:100%;justify-content:flex-start}}
