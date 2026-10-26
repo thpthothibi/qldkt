@@ -1,7 +1,21 @@
-<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HQGD · THPT Hồ Thị Bi</title><link rel="stylesheet" href="style.css?v=3.2.0"><script src="config.js?v=3.2.0"></script><script src="vendor/appwrite.js?v=3.2.0"></script></head><body>
-<div class="mobile-bar"><button id="menuToggle" aria-controls="sidebar" aria-expanded="false">☰ Menu</button><b>HQGD · Hồ Thị Bi</b></div><button id="menuBackdrop" aria-label="Đóng menu" hidden></button><aside id="sidebar" aria-label="Điều hướng chính"><button id="menuClose" class="secondary">Đóng menu ✕</button><a class="brand" href="#overview"><b>H</b><span>HỒ THỊ BI<small>Hiệu quả giảng dạy</small></span></a><div class="nav-label">KHÔNG GIAN LÀM VIỆC</div><nav id="nav"></nav><div class="side-note">Từ dữ liệu đến kết quả<br><strong>Rõ nguồn · Đúng công thức</strong></div></aside>
-<main><header><div><span class="eyebrow">TRƯỜNG THPT HỒ THỊ BI</span><h1 id="title">Tổng quan</h1></div><button id="accountBtn" class="secondary">Đăng nhập</button></header>
-<div class="period"><label>Năm học<input id="year" value="2026-2027" pattern="20[0-9]{2}-20[0-9]{2}" aria-label="Năm học"></label><label hidden>Học kỳ<select id="term"><option value="1">Học kỳ 1</option><option value="2">Học kỳ 2</option></select></label><label>Đợt kiểm tra<select id="exam" aria-label="Đợt kiểm tra"><option value="gk1">Giữa HK1</option><option value="hk1">HK1</option><option value="gk2">Giữa HK2</option><option value="hk2">HK2</option></select></label><button id="loadYear" class="secondary">Tải dữ liệu năm</button><span id="session">Chế độ xem thử · Chưa kết nối tài khoản</span></div>
-<p id="storageState" class="muted" role="status">Nhập file cần bấm Lưu phiên bản để xem trên thiết bị khác.</p><div id="stages" class="stages" aria-label="Bốn đợt kiểm tra"></div><div id="notice" role="status" aria-live="polite">Sẵn sàng. Bắt đầu bằng cách tải PDF tại mục Nhập PDF.</div><section id="view"></section><footer>HQGD 3.2 · Công thức được đối chiếu từ mẫu Excel HK1/HK2 · Kết quả thiếu dữ liệu được giữ ở trạng thái nháp.</footer></main>
-<dialog id="loginDialog"><form id="loginForm"><h2>Đăng nhập HQGD</h2><p>Dùng tài khoản Appwrite đã được trường cấp quyền.</p><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Mật khẩu<input id="password" type="password" autocomplete="current-password" required></label><p id="loginMessage" role="status"></p><div class="actions"><button type="button" id="closeLogin" class="secondary">Đóng</button><button>Đăng nhập</button></div></form></dialog>
-<script type="module" src="app.mjs?v=3.2.0"></script></body></html>
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer"><meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://sgp.cloud.appwrite.io" crossorigin>
+<link rel="preconnect" href="https://htb-scores-api.thpthothibi2.workers.dev" crossorigin>
+<meta name="theme-color" content="#082e66"><title>HTB • Quản lý điểm kiểm tra</title>
+<link rel="preload" href="./fonts/QdVPSTAyLFyeg_IDWvOJmVES_Hw4BXoKZA.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/QdVPSTAyLFyeg_IDWvOJmVES_Hw3BXo.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="./app.css?v=q33-4-20261026">
+<link rel="manifest" href="./manifest.webmanifest"></head><body>
+<div id="app"></div><div id="toast" role="status"></div><dialog id="modal"></dialog>
+<script defer src="./appwrite-17.js"></script>
+<script defer src="./config.js?v=htb-release-20261026-q33-4"></script>
+<script defer src="./bridge.js?v=htb-release-20261026-q33-4"></script>
+
+
+
+<script defer src="./app.js?v=htb-release-20261026-q33-4"></script>
+<script defer src="./voice-entry.js?v=q33-4-20261026"></script>
+</body></html>
