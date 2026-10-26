@@ -1,9 +1,2 @@
-// Public app settings only. NEVER place the server API key or JWT here.
-window.HTB_CONFIG = Object.freeze({
-  mode: 'live',
-  transport: 'cloudflare',
-  enablePilotUI: false,
-  appwriteEndpoint: 'https://sgp.cloud.appwrite.io/v1',
-  appwriteProjectId: '6accf1ea0033555d208d',
-  workerApiUrl: 'https://htb-scores-api.thpthothibi2.workers.dev/api'
-});
+// Cấu hình công khai, không chứa mật khẩu/API key.
+window.HQGD_CONFIG={api:'https://htb-hqgd.thpthothibi22.workers.dev',endpoint:'https://sgp.cloud.appwrite.io/v1',project:'6addfd810015ef2f3df0'};
