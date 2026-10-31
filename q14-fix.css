@@ -1,0 +1,11 @@
+.q14-edit{white-space:nowrap;border-radius:9px!important;background:#e9f3ff!important;color:#12519b!important;border:1px solid #bad6f5!important;font-weight:700!important}.q14-scope{display:flex;flex-direction:column;gap:5px;padding:12px;border-radius:12px;background:#edf5ff;margin:10px 0}.q14-warning{font-size:12px;color:#7b4a16;margin:12px 0}
+/* Q14.1: containment for the imported-phach table and edit dialog */
+#content .table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+#content .data-table{width:100%;border-collapse:collapse}
+#content .data-table th,#content .data-table td{vertical-align:middle}
+#content .data-table th:last-child,#content .data-table td:last-child{text-align:center}
+#content button.q14-edit{display:inline-flex;align-items:center;justify-content:center;min-width:82px;min-height:36px;padding:6px 12px;max-width:100%;cursor:pointer}
+#q14-correct-form .field{margin:12px 0}
+#q14-correct-form input{width:100%;max-width:100%;box-sizing:border-box}
+#q14-correct-form .modal-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px}
+@media(max-width:680px){#content .data-table{min-width:640px}#q14-correct-form .modal-actions button{flex:1 1 125px}}
