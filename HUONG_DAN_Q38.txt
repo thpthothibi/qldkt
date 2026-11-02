@@ -1,0 +1,54 @@
+HTB QLKT Q38 — SỬA CHỌN KHỐI 11 NHƯNG PHIẾU GIỮ KHỐI 10
+
+CÁCH CẬP NHẬT
+1. Giải nén gói này.
+2. Trong repository GitHub đang phục vụ https://thpthothibi.github.io/qldkt/,
+   tải đè app.js và index.html vào đúng thư mục đang chứa hai tệp này.
+   Nếu repository qldkt xuất bản từ thư mục gốc thì tải ngay vào thư mục gốc.
+3. Commit thay đổi, chờ GitHub Pages triển khai thành công.
+4. Giáo viên sao chép/in giữ lại các điểm chưa lưu trước khi tải lại trang.
+5. Mở lại trang, nhấn Ctrl+F5. Góc dưới menu phải hiện Q38.
+6. Chọn khối 11 / môn Lịch sử, nhập mã phách đúng túi bài.
+   Khi bấm Lưu & xác nhận, hộp xác nhận phải ghi Khối 11.
+
+ĐÂY LÀ GÓI CẬP NHẬT GIAO DIỆN, KHÔNG PHẢI BỘ CÀI ĐẦY ĐỦ.
+Giữ các tệp còn lại trong repository. Không cần triển khai lại Worker.
+Bản này lấy app.js/index.html từ trang công khai trong phiên sửa ngày 02/11/2026.
+Gói Q37 trước đó chỉ chứa Worker và hướng dẫn; bản sửa này không thay Worker Q37.
+
+NGUYÊN NHÂN VÀ PHẠM VI SỬA
+- Các ô Khối/Môn/Ngày được chuyển từ phiếu lên thanh chọn chung.
+- Khi vẽ lại phiếu, ô cũ ở thanh chọn còn tồn tại cùng ID với ô mới.
+  Truy vấn theo ID gắn xử lý vào ô cũ rồi xóa nó, để ô mới không có xử lý.
+- Q38 dọn ô cũ trước khi tạo và gắn xử lý cho ô mới.
+- Dọn các ô được chuyển khi rời màn hình nhập điểm.
+- Phiếu mới giữ khối/môn đang chọn.
+- Chặn lưu nháp và xác nhận nếu khối/môn/ngày/mã phách/năm/đợt không khớp.
+- Việc vẽ lại giao diện giữ nguyên điểm và ghi chú của phiếu đang nhập.
+- Khi chủ động đổi khối/môn/mã phách trên phiếu có điểm, cơ chế hỏi xác nhận
+  bỏ điểm hiện tại của phiên bản cũ vẫn được giữ. Bấm Hủy nếu muốn giữ điểm.
+
+DỮ LIỆU CŨ
+Bản sửa không tự chuyển các phiếu đã lưu sai khối, không khôi phục phiếu đã xóa.
+Với phiếu đã lưu sai: giữ bản sao điểm, xác định mã phách và khối đúng trước khi
+xử lý riêng. Không xóa phiếu chỉ để đổi khối.
+
+KIỂM TRA
+Đã tái hiện bản cũ: ô chọn hiện 11 nhưng dữ liệu phiếu vẫn là 10.
+Đã kiểm tra cú pháp JavaScript và 14 tình huống bằng môi trường DOM jsdom:
+- Chỉ có một ô Khối có xử lý sau nhiều lần vẽ lại.
+- Đổi sang 11 cập nhật dữ liệu phiếu.
+- Vẽ lại giữ điểm và ghi chú vắng.
+- Đổi ngày giữ điểm.
+- Hộp xác nhận hiển thị khối 11.
+- Yêu cầu lưu gửi khối 11 và điểm đúng.
+- Lệch khối chặn lưu xác nhận.
+- Lệch khối chặn mở hộp xác nhận.
+- Lệch môn chặn lưu nháp.
+- Hủy đổi khối giữ phiếu và điểm.
+- Phiếu mới giữ khối và môn.
+- Xử lý Khối/Môn/Mã phách hoạt động qua nhiều lần đổi.
+- Lệch năm học chặn lưu.
+- Rời trang nhập loại bỏ ô chọn cũ.
+Yêu cầu lưu trong kiểm tra được mô phỏng, không ghi lên database thật.
+Chưa thử trực tiếp bằng phiên giáo viên trên hệ thống thật.
